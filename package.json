@@ -42,6 +42,7 @@
     "@cwv/cwv.js": "file:../cwv.js",
     "aes-js": "^3.1.2",
     "bn.js": "^4.4.0",
+    "fs-extra": "^7.0.1",
     "gulp": "^4.0.0",
     "hmac-drbg": "^1.0.0",
     "inherits": "^2.0.1",
@@ -60,6 +61,7 @@
     "request-promise": "^4.2.2",
     "sandboxed-module": "^2.0.3",
     "sinon": "^7.2.2",
-    "sleep": "^5.2.3"
+    "sleep": "^5.2.3",
+    "solc": "^0.4.25"
   }
 }

@@ -13,7 +13,7 @@ var buildAndRun =  () =>
 	try {
 		console.log("checkfile")
 		var execmd=exec('node dist/buffle/index.js',{stdio:'inherit'},function(err,out){
-        	console.log("err=="+err);
+        	// console.log("err=="+err);
         	console.log(out);
         });
 
@@ -24,7 +24,8 @@ var buildAndRun =  () =>
         execmd.end=()=>{
             return true;
         }
-		gulp.src("test/**/*.js").pipe(gulp.dest('dist/test/'));
+        gulp.src("test/**/*.js").pipe(gulp.dest('dist/test/'));
+        gulp.src("contracts/**/*.sol").pipe(gulp.dest('dist/contracts/'));
 	    gulp.src('src/*buffle/*.js')
 	        .pipe(babel({
 	            presets: ['es2015']
@@ -43,9 +44,10 @@ gulp.task('build',()=> {
         }))
         .pipe(gulp.dest('dist'));
         gulp.src("test/**/*.js").pipe(gulp.dest('dist/test/'))
-
+        gulp.src("contracts/**/*.solc").pipe(gulp.dest('dist/contracts/'));
         }
      );
+
 
 gulp.task('default',function () {
     // Callback mode, useful if any plugin in the pipeline depends on the `end`/`flush` event
