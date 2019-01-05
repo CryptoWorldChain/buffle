@@ -21,10 +21,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var VERSION = "v1.0.0";
 
 // console.log("version:F17::"+VERSION+",cwv="+cwv) 
-_contractbuild2.default.compile();
 
 exports.default = {
 	version: VERSION,
-	runner: _run2.default,
-	build: _contractbuild2.default.compile
+	runner: _run2.default
+	// build:contractbuild.compile
+
 };
