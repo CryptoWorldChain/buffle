@@ -7,7 +7,7 @@ class RpcMethod{
 	{
 		this.contractinst =  contractinst;
 		this.method_name = name;
-		console.log("new abi method ="+this.method_name+",inst="+contractinst)
+		// console.log("new abi method ="+this.method_name+",inst="+contractinst)
 
 	}
 	call(){
@@ -37,10 +37,12 @@ class ContractInstance{
 		for(var abi in contract.abi)
 		{
 			var abidesc=contract.abi[abi];
-			if(abidesc.name){
+			if(abidesc.name&&abidesc.type=='function'){
+				console.log("get abi==>"+abidesc.name+",json="+JSON.stringify(abidesc))
 				var rpcM = new RpcMethod(this,abidesc.name);
 				var unbound=rpcM.call;
 				this[abidesc.name]=unbound.bind(rpcM)
+				this[abidesc.name].call = this[abidesc.name];
 			}
 
 			
