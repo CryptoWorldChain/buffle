@@ -38,7 +38,7 @@ class ContractInstance{
 		{
 			var abidesc=contract.abi[abi];
 			if(abidesc.name&&abidesc.type=='function'){
-				console.log("get abi==>"+abidesc.name+",json="+JSON.stringify(abidesc))
+				// console.log("get abi==>"+abidesc.name+",json="+JSON.stringify(abidesc))
 				var rpcM = new RpcMethod(this,abidesc.name);
 				var unbound=rpcM.call;
 				this[abidesc.name]=unbound.bind(rpcM)

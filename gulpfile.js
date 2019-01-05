@@ -11,7 +11,7 @@ require('log-timestamp');
 var buildAndRun =  () =>
 {
 	try {
-		console.log("gulp [start build]")
+		console.log("gulp [start build] ......>>>>>>")
 		var execmd=exec('node dist/buffle/index.js ',{stdio:'inherit'});
         // execmd.stdout.on('data', function(data) {
         //     // console.log(data); 
