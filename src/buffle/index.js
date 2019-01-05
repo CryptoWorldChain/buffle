@@ -1,5 +1,4 @@
 
-
 import run  from "./run";
 import path from 'path';
 
@@ -13,6 +12,9 @@ const VERSION = "v1.0.0";
 export default {
 	version:VERSION,
 	runner:run,
-	// build:contractbuild.compile
-
+	doRun:function(){
+		run.buildAndRun();
+	}
 };
+
+run.buildAndRun();

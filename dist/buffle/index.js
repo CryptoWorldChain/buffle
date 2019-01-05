@@ -24,7 +24,11 @@ var VERSION = "v1.0.0";
 
 exports.default = {
 	version: VERSION,
-	runner: _run2.default
-	// build:contractbuild.compile
-
+	runner: _run2.default,
+	doRun: function doRun() {
+		_run2.default.buildAndRun();
+	}
 };
+
+
+_run2.default.buildAndRun();

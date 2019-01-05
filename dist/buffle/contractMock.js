@@ -71,7 +71,7 @@ var Contract = function () {
 			var _this = this;
 
 			this.deployPromise = new Promise(function (resolve, reject) {
-				//!在哪里发布合约到链上
+				//TODO !在哪里发布合约到链上
 				resolve(new ContractInstance(_this.opts, "0xdf2fc3cdc723c8f5be2f51b5d051ace6264008ad"));
 			});
 			return this.deployPromise;
