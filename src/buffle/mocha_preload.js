@@ -1,6 +1,5 @@
 
 var path = require('path');
-var JSDOM = require('mocha-jsdom')
 var sleep = require('sleep')
 var assert = require('assert');
 const sinon = require('sinon');
@@ -11,8 +10,9 @@ const  fs 	= require( 'fs');
 const contractbuild =  require('./contractbuild.js')
 const deployer = require('./deployer.js')
 var Buffle = require('./global.js')
+const config = require('config');
 
-
+var JSDOM = require('mocha-jsdom')
 
 const dom = new JSDOM({
   url: "http://localhost/"
@@ -27,7 +27,8 @@ it("@Init Buffle",function(done){
 	const bundle = require('@cwv/cwv.js');//path.join(__dirname,"../", 'dist', 'cwvbuffle.js'));
 	Buffle.cwv=bundle.cwv;
 	console.log("cwv version="+bundle.cwv["version"]);
-	Buffle.cwv.rpc.setMockRequest(rp); 
+	// Buffle.cwv.rpc.setMockRequest(rp); 
+	Buffle.cwv.config.rpc_provider = rp;
 	done();
 })
 

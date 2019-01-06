@@ -1,0 +1,18 @@
+{
+  "network": {
+    "rpc": "http://ta30.icwv.co:38000/fbs"
+  },
+  "accounts": {
+    "num":10,
+    "default": "0x"
+  },
+  "keystore": {
+    "dir": [
+      "keystore"
+    ],
+    "privatekeys": [
+      "3232323232323292424",
+      "3232323299999988899"
+    ]
+  }
+}

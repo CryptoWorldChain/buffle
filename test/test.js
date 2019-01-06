@@ -37,7 +37,7 @@ contract('#testall', function(accouts) {
 
 
 		console.log("accounts.getbalance="+accounts[0]+",cwv="+cwv) 
-		var p = cwv.rpc.getBalance("df2fc3cdc723c8f5be2f51b5d051ace6264008ad").then(function(body){
+		var p = cwv.getBalance("df2fc3cdc723c8f5be2f51b5d051ace6264008ad").then(function(body){
 			console.log("get body:"+JSON.stringify(body));
 		}).catch(function (error){
 			console.log("get error:"+error);

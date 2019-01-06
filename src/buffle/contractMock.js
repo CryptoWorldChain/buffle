@@ -1,5 +1,6 @@
 
 
+var Buffle = require('./global.js')
 
 
 class RpcMethod{
@@ -13,21 +14,13 @@ class RpcMethod{
 	call(){
 		//在这里调用远程的方法方案
 		console.log("calling method=="+this.method_name+",contractaddr="+this.contractinst.address);
+		console.log("cwvbundle="+Buffle.cwv);
 		for(var arg in arguments){
 			console.log("arg=="+arg);
 		}
 	}
 }
 
-var RpcCall = function(){
-	if(!this.name)
-	{
-		this.name = NaN;
-	}
-	console.log("calling method=="+this.name+",args="+arguments);
-
-
-}
 class ContractInstance{
 	constructor(contract,address) {
 		// code
@@ -43,9 +36,7 @@ class ContractInstance{
 				var unbound=rpcM.call;
 				this[abidesc.name]=unbound.bind(rpcM)
 				this[abidesc.name].call = this[abidesc.name];
-			}
-
-			
+			}			
 		}
 	}
 
