@@ -4,10 +4,16 @@
 	shared variable
 */
 
+var window={};
+
+import cwv from "@cwv/cwv.js";
+
 
 function Buffle(){
-	this.cwv = NaN;
+	console.log("Buffle.cwv="+cwv)
+	this.cwv = cwv;
 	this.accounts = [];
+	this.keypairs = {};
 	this.rpc_provider = NaN;
 }
 

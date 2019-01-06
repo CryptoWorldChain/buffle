@@ -24,10 +24,6 @@ var originit=it;
 var	httpPostStub = sinon.stub(rp,'post'); // stub http so we can change the response
 
 it("@Init Buffle",function(done){
-	const bundle = require('@cwv/cwv.js');//path.join(__dirname,"../", 'dist', 'cwvbuffle.js'));
-	Buffle.cwv=bundle.cwv;
-	console.log("cwv version="+bundle.cwv["version"]);
-	// Buffle.cwv.rpc.setMockRequest(rp); 
 	Buffle.cwv.config.rpc_provider = rp;
 	done();
 })
@@ -37,7 +33,7 @@ it('@Load Contract Test', function(){
 	describe('', function(){
 		//sleep.sleep(10)
 		this.timeout(1000000);
-		var preloadaccts=["a","b","c"];
+		var preloadaccts=Buffle.accounts;
 
 		var bit = function (title, fn) {
 			originit(title, function(done){

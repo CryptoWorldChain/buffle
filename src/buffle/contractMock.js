@@ -2,6 +2,7 @@
 
 var Buffle = require('./global.js')
 
+var objectConstructor = {}.constructor;
 
 class RpcMethod{
 	constructor(contractinst,name)
@@ -11,11 +12,21 @@ class RpcMethod{
 		// console.log("new abi method ="+this.method_name+",inst="+contractinst)
 
 	}
+
 	call(){
 		//在这里调用远程的方法方案
+		const args = Array.from(arguments);
+		var opts = {};
+		if(args.length>0){
+			if(args[args.length-1].constructor == objectConstructor){
+				opts = args[args.length-1];
+			}
+		}
+
 		console.log("calling method=="+this.method_name+",contractaddr="+this.contractinst.address);
-		console.log("cwvbundle="+Buffle.cwv);
-		for(var arg in arguments){
+
+
+		for(var arg in args){
 			console.log("arg=="+arg);
 		}
 	}

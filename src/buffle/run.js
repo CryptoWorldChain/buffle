@@ -3,18 +3,18 @@ import  fs from 'fs'
 import  path from 'path';
 // Instantiate a Mocha instance.
 // process.env["NODE_CONFIG_DIR"] = __dirname + "/configDir/";
-
+import Buffle from "./global";
 import config from 'config'
 import accounts from "./accounts";
 
 // var mocha = new Mocha();
 
 // console.log("serveraddr="+JSON.stringify(config));
-
+import cwv from "@cwv/cwv.js";
 var _buildAndRun = function(){
-
+		Buffle.cwv=cwv;
 		accounts.ensureAccounts(config.accounts.num);
-	
+
 		var  Mocha =require('mocha')
 		// console.log("serveraddr.rpc="+config.network.rpc);
 		if(config.network.rpc){
