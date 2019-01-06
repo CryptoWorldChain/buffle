@@ -24,7 +24,7 @@ contract('#testall', function(accounts) {
 		CWVRandImpl.deployed().then(function(inst){
 			console.log("get deployed inst=="+inst.address);
 			try{
-				inst.getBlockNum(1,2,3,"agbc");
+				inst.getBlockNum(1,2,3,"agbc",{from:accounts[1]});
 			}catch(error){
 				console.log("get error:"+error);
 			}
@@ -32,11 +32,11 @@ contract('#testall', function(accounts) {
 
 		CWVToken.deployed().then(function(inst){
 			console.log("get CWVToken. inst=="+inst.address);
-			inst.totalSupply.call();
+			inst.totalSupply.call({from:accounts[1]});
 		})
 
-		console.log("accounts.getbalance="+accounts[0]) 
-		var p = cwv.getBalance(accounts[0]).then(function(body){
+		console.log("accounts.getbalance="+accounts[0])  
+		var p = cwv.getBalance(accounts[0],{from:accounts[1]}).then(function(body){
 			console.log("get body:"+body);
 
 		}).catch(function (error){

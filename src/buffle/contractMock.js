@@ -18,12 +18,13 @@ class RpcMethod{
 		const args = Array.from(arguments);
 		var opts = {};
 		if(args.length>0){
-			if(args[args.length-1].constructor == objectConstructor){
+			if(args[args.length-1].constructor.name == 'Object'){
 				opts = args[args.length-1];
 			}
 		}
 
-		console.log("calling method=="+this.method_name+",contractaddr="+this.contractinst.address);
+		console.log("calling rpc method=="+this.method_name+",contractaddr="+this.contractinst.address
+			+",from="+opts.from);
 
 
 		for(var arg in args){
