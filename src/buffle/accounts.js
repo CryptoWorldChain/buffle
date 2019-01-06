@@ -39,7 +39,7 @@ var _ensureAccounts = function(num){
 					var ksContent = require(path.join(ksDir,file));
 					// console.log("get key store:"+ksContent);
 					var kp=keystore.json2KeyPair(ksContent,config.keystore.passwd||"000000");
-					console.log("load ks,OK:address=0x"+kp.hexAddress);
+					console.log("load account ok , address=0x"+kp.hexAddress);
 					existAccounts.push(kp);
 				}catch(err){
 					console.error("load key store file error:",err);

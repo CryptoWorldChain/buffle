@@ -15,14 +15,14 @@ deployer.deploy(CWVToken).then(function(address){
 
 })
 
-contract('#testall', function(accouts) {
+contract('#testall', function(accounts) {
 
-	console.log("test my boy:accouts=="+accouts+",cwv="+cwv)
+	console.log("test my boy:accounts=="+accounts+",cwv="+cwv)
 	// console.log("it=="+it);
 	it('test.1-getbalance', async function(accounts) {
 
 		CWVRandImpl.deployed().then(function(inst){
-			console.log("get deployed.2222 inst=="+inst.address);
+			console.log("get deployed inst=="+inst.address);
 			try{
 				inst.getBlockNum(1,2,3,"agbc");
 			}catch(error){
@@ -35,10 +35,10 @@ contract('#testall', function(accouts) {
 			inst.totalSupply.call();
 		})
 
+		console.log("accounts.getbalance="+accounts[0]) 
+		var p = cwv.getBalance(accounts[0]).then(function(body){
+			console.log("get body:"+body);
 
-		console.log("accounts.getbalance="+accounts[0]+",cwv="+cwv) 
-		var p = cwv.getBalance("df2fc3cdc723c8f5be2f51b5d051ace6264008ad").then(function(body){
-			console.log("get body:"+JSON.stringify(body));
 		}).catch(function (error){
 			console.log("get error:"+error);
 		}).done();
