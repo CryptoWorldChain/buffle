@@ -7,6 +7,7 @@ import Buffle from "./global";
 import config from 'config'
 import accounts from "./accounts";
 
+// import cwvmockup from './cwvmockup'
 // var mocha = new Mocha();
 
 // console.log("serveraddr="+JSON.stringify(config));
@@ -14,6 +15,8 @@ import cwv from "@cwv/cwv.js";
 var _buildAndRun = function(){
 		Buffle.cwv=cwv;
 		accounts.ensureAccounts(config.accounts.num);
+
+		// console.log("mockup=="+cwvmockup.transfer);
 
 		var  Mocha =require('mocha')
 		// console.log("serveraddr.rpc="+config.network.rpc);

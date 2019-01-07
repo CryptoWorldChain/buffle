@@ -4,8 +4,6 @@
 	shared variable
 */
 
-var window={};
-
 import cwv from "@cwv/cwv.js";
 
 

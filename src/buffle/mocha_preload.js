@@ -11,6 +11,7 @@ const contractbuild =  require('./contractbuild.js')
 const deployer = require('./deployer.js')
 var Buffle = require('./global.js')
 const config = require('config');
+var cwvmockup = require("./cwvmockup.js");
 
 var JSDOM = require('mocha-jsdom')
 
@@ -48,7 +49,8 @@ it('@Load Contract Test', function(){
 		}
 	 
 		global.it = bit
-		global.cwv=Buffle.cwv;
+		global.cwv=cwvmockup;
+		console.log("cwvmockup="+JSON.stringify(cwvmockup));
 		global.artifacts = contractbuild;
 		global.deployer = deployer;
 		global.contract = contract;
@@ -59,6 +61,6 @@ it('@Load Contract Test', function(){
 			var contractfile = require(path.join(testDir,file));
 		});
 
-	})	
+	})
 })
 

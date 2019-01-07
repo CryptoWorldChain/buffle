@@ -17,32 +17,39 @@ deployer.deploy(CWVToken).then(function(address){
 
 contract('#testall', function(accounts) {
 
-	console.log("test my boy:accounts=="+accounts+",cwv="+cwv)
+	console.log("test my boy:accounts=="+accounts+",cwv="+JSON.stringify(cwv))
 	// console.log("it=="+it);
 	it('test.1-getbalance', async function(accounts) {
-
-		CWVRandImpl.deployed().then(function(inst){
-			console.log("get deployed inst=="+inst.address);
-			try{
-				inst.getBlockNum(1,2,3,"agbc",{from:accounts[1]});
-			}catch(error){
-				console.log("get error:"+error);
-			}
-		})
-
-		CWVToken.deployed().then(function(inst){
-			console.log("get CWVToken. inst=="+inst.address);
-			inst.totalSupply.call({from:accounts[1]});
-		})
 
 		console.log("accounts.getbalance="+accounts[0])  
 		var p = cwv.getBalance(accounts[0],{from:accounts[1]}).then(function(body){
 			console.log("get body:"+body);
-
 		}).catch(function (error){
 			console.log("get error:"+error);
 		}).done();
 		await p;
+
+		p = cwv.transfer(accounts[3],100).then(function(body){
+			console.log("get body:"+body);
+		}).catch(function (error){
+			console.log("get error:"+error);
+		}).done();
+		await p;
+		
+		p = cwv.transfer(accounts[4],100,{from:accounts[1]}).then(function(body){
+			console.log("get body:"+body);
+		}).catch(function (error){
+			console.log("get error:"+error);
+		}).done();
+		await p;
+
+		p = cwv.getBalance(accounts[3],{from:accounts[1]}).then(function(body){
+			console.log("get body:"+body);
+		}).catch(function (error){
+			console.log("get error:"+error);
+		}).done();
+		await p;
+
 		console.log("okok:");
 		return p;
 	});
