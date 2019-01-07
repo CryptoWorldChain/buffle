@@ -38,7 +38,7 @@ contract('#testall', function(accounts) {
 		}).done();
 		await p;
 		
-		sleep.sleep(5);
+		sleep.sleep(10);
 		p = cwv.getBalance(accounts[3],{from:accounts[1]}).then(function(body){
 			console.log("get body:"+body);
 		}).catch(function (error){
