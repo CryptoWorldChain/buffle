@@ -8,9 +8,7 @@ import {KeyPair,keystore} from "@cwv/cwv.js";
 
 import config from 'config'
 
-var genAccounts = function(num){
 
-}
 var getFileName=function(ksDir,prefix){
 	var i=0;
 	while(i<10000000){
@@ -22,6 +20,19 @@ var getFileName=function(ksDir,prefix){
 	}
 	return NaN;
 	
+}
+
+var saveKeyStore = function(kp){
+	var ksDir = utils.checkDir('keystore');
+	var ksJson = keystore.exportJSON(kp,kp.keystore_pwd||config.keystore.passwd||"000000");
+	var file=kp.keystore_filename;
+	if(file){
+		// console.log("saveKeyStore:"+file+"==>"+ksJson);
+		let fd = fs.openSync(file, 'w+');
+		fs.writeSync(fd,JSON.stringify(ksJson));
+	}else{
+		console.error("cannot store file in "+kp.keystore_filename);
+	}
 }
 
 var _ensureAccounts = function(num){
@@ -37,9 +48,10 @@ var _ensureAccounts = function(num){
 				try{
 					kpcount ++;
 					var ksContent = require(path.join(ksDir,file));
-					// console.log("get key store:"+ksContent);
+					// console.log("get key store:"+JSON.stringify(ksContent));
 					var kp=keystore.json2KeyPair(ksContent,config.keystore.passwd||"000000");
-					console.log("load account ok , address=0x"+kp.hexAddress);
+					kp.keystore_filename = path.join(ksDir,file);
+					console.log("load account ok,address=0x"+kp.hexAddress+',nonce='+kp.nonce);
 					existAccounts.push(kp);
 				}catch(err){
 					console.error("load key store file error:",err);
@@ -54,7 +66,8 @@ var _ensureAccounts = function(num){
 					var ksJson = keystore.exportJSON(kp,config.keystore.passwd||"000000");
 					var file=getFileName(ksDir,config.keystore.prefix||"keystore-");
 					if(file){
-						console.log("new keystore:"+file+"==>"+ksJson);
+						// console.log("new keystore:"+file+"==>"+ksJson);
+						kp.keystore_filename = file;
 						let fd = fs.openSync(file, 'w+');
 						fs.writeSync(fd,JSON.stringify(ksJson));
 					}else{
@@ -90,5 +103,6 @@ var _ensureAccounts = function(num){
 
 
 export default {
-	ensureAccounts:_ensureAccounts
+	ensureAccounts:_ensureAccounts,
+	saveKeyStore:saveKeyStore,
 }

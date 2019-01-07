@@ -50,7 +50,7 @@ it('@Load Contract Test', function(){
 	 
 		global.it = bit
 		global.cwv=cwvmockup;
-		console.log("cwvmockup="+JSON.stringify(cwvmockup));
+		// console.log("cwvmockup="+JSON.stringify(cwvmockup));
 		global.artifacts = contractbuild;
 		global.deployer = deployer;
 		global.contract = contract;
