@@ -39,13 +39,6 @@ contract('#testall', function(accounts) {
 		await p;
 		
 		sleep.sleep(5);
-		// p = cwv.transfer(accounts[4],100,{from:accounts[1]}).then(function(body){
-		// 	console.log("get body:"+body);
-		// }).catch(function (error){
-		// 	console.log("get error:"+error);
-		// }).done();
-		// await p;
-
 		p = cwv.getBalance(accounts[3],{from:accounts[1]}).then(function(body){
 			console.log("get body:"+body);
 		}).catch(function (error){

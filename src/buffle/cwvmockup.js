@@ -2,7 +2,7 @@
 
 import Buffle from './global';
 import config from 'config';
-
+import BN  from "bn.js";
 import accounts from "./accounts";
 
 module.exports.transfer =function (to,value,opts){
@@ -25,6 +25,8 @@ module.exports.transfer =function (to,value,opts){
 		opts.keypair = kps;
 		// console.log("from=="+opts.from+",kp="+kps.hexAddress);
 		// console.log("opts=="+JSON.stringify(opts));
+		value = new BN(value).mul(new BN("10").pow(new BN("18")))
+		console.log("new value="+value);
 		return  Buffle.cwv.rpc.transfer(to,value,opts);
 	}
 module.exports.getBalance =function  (addr,opts){
