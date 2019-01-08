@@ -72,12 +72,16 @@ contract ManagerUpgradeable is LockIdGen {
           require(pto != address(0));
           managers[pto] = pto;
         }
-        mancount = 0;
+        mancount = numMans;
     }
 
     modifier onlyManager {
         require(msg.sender == managers[msg.sender]);
         _;
+    }
+
+    function getManCount() public view returns (uint256 count){
+        return mancount;
     }
 
     // for manager change

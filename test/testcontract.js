@@ -17,9 +17,10 @@ contract('#testall', function(accounts) {
 			console.log("get error:"+error);
 		});
 		await p;
+		// sleep.sleep(10);
 
 		var manInst = NaN;
-		var p = deployer.deploy(ManagerUpgradeable,{from:accounts[0]}).then(function(inst){
+		var p = deployer.deploy(ManagerUpgradeable,[accounts[0]],{from:accounts[0]}).then(function(inst){
 			console.log("get ManagerUpgradeable deploying inst.address=="+inst.address+",txhash = "+inst.txhash);
 			manInst=inst;
 			return inst;
@@ -29,9 +30,11 @@ contract('#testall', function(accounts) {
 
 		console.log("get ManagerInst="+manInst.address);
 
-
 		manInst.deployed().then(function(inst){
 			console.log("deployed inst.address=="+inst.address+",txhash = "+inst.txhash);
+			manInst.getManCount().then(function(ret){
+				console.log("manInst.mancount.callback=="+ret);
+			})
 		})
 
 

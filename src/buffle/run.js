@@ -7,6 +7,10 @@ import Buffle from "./global";
 import config from 'config'
 import accounts from "./accounts";
 
+import abi from 'ethereumjs-abi';
+
+
+
 // import cwvmockup from './cwvmockup'
 // var mocha = new Mocha();
 
@@ -17,7 +21,12 @@ var _buildAndRun = function(){
 		accounts.ensureAccounts(config.accounts.num);
 
 		// console.log("mockup=="+cwvmockup.transfer);
+		var args=["mancount():(uint256)"];
+		
+		var bb=abi.methodID("getManCount",[]);
 
+		console.log("bb="+bb.toString('hex'));
+		
 		var  Mocha =require('mocha')
 		// console.log("serveraddr.rpc="+config.network.rpc);
 		if(config.network.rpc){

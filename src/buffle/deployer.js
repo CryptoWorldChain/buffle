@@ -6,18 +6,9 @@ export async function deploy(contract,opts) {
 	
 	// console.log("contract to deploy=="+JSON.stringify(contract));
 	if(contract){
-		return contract.doDeploy(Buffle.cwv,opts).then(function (body){
-			console.log("contract.doDeploy.return body=="+body)
-			if(body){
-				var jsbody = JSON.parse(body);
-				if(jsbody.contractHash){
-					var inst = new contractMock.ContractInstance(contract,jsbody.contractHash,jsbody.txHash)
-					console.log("create Contract OKOK:"+inst.constructor.name);
-					return inst;
-				}
-			}			
-			return NaN;
-		});
+		// console.log("deploy param1="+arguments[1]);
+		var args = Array.prototype.slice.call(arguments).slice(1,arguments.length)
+		return contract.doDeploy.apply(contract,args);
 	}
 
 }

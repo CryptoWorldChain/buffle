@@ -22,7 +22,7 @@ var getFileName=function(ksDir,prefix){
 	
 }
 
-var saveKeyStore = function(kp){
+var __saveKeyStore = function(kp){
 	var ksDir = utils.checkDir('keystore');
 	var ksJson = keystore.exportJSON(kp,kp.keystore_pwd||config.keystore.passwd||"000000");
 	var file=kp.keystore_filename;
@@ -104,5 +104,7 @@ var _ensureAccounts = function(num){
 
 export default {
 	ensureAccounts:_ensureAccounts,
-	saveKeyStore:saveKeyStore,
+	saveKeyStore:__saveKeyStore,
 }
+
+module.exports.saveKeyStore = __saveKeyStore
