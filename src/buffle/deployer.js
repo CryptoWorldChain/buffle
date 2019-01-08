@@ -12,11 +12,11 @@ export async function deploy(contract,opts) {
 				var jsbody = JSON.parse(body);
 				if(jsbody.contractHash){
 					var inst = new contractMock.ContractInstance(contract,jsbody.contractHash,jsbody.txHash)
-					// console.log("create Contract OKOK:"+JSON.stringify(inst));
+					console.log("create Contract OKOK:"+inst.constructor.name);
 					return inst;
 				}
 			}			
-			return body;
+			return NaN;
 		});
 	}
 

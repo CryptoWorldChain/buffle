@@ -18,23 +18,28 @@ contract('#testall', function(accounts) {
 		});
 		await p;
 
-	})
-
-
-	it('test.2-deploy contract', async function(accounts) {
 		var manInst = NaN;
 		var p = deployer.deploy(ManagerUpgradeable,{from:accounts[0]}).then(function(inst){
-			console.log("get ManagerUpgradeable deploy inst.address=="+inst.address+",txhash = "+inst.txhash);
+			console.log("get ManagerUpgradeable deploying inst.address=="+inst.address+",txhash = "+inst.txhash);
 			manInst=inst;
+			return inst;
 		});
 
 		await p;
 
 		console.log("get ManagerInst="+manInst.address);
 
-		manInst
+
+		manInst.deployed().then(function(inst){
+			console.log("deployed inst.address=="+inst.address+",txhash = "+inst.txhash);
+		})
+
+
 
 	})
+
+
+	
 
 
 })

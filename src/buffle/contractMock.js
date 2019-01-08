@@ -4,6 +4,7 @@ var Buffle = require('./global.js')
 var config = require('config');
 
 var txtype = require('./cwvtxtype.js')
+var sleep=require('sleep');
 var objectConstructor = {}.constructor;
 
 class RpcMethod{
@@ -40,6 +41,7 @@ class ContractInstance{
 		this.contract = contract;
 		this.address = address;
 		this.txhash = txhash;
+		this.status = '';
 		for(var abi in contract.abi)
 		{
 			var abidesc=contract.abi[abi];
@@ -52,6 +54,40 @@ class ContractInstance{
 			}			
 		}
 	}
+
+	deployed(cc){
+		//check
+		cc = cc||0;
+		if(this.txhash&&cc<10)//调用10次
+		{
+			var self = this;
+			return  Buffle.cwv.rpc.getTransaction(this.txhash).then(function(body){
+				console.log("get tx deploy result =="+body);
+				var jsbody = JSON.parse(body);
+				if(jsbody.transaction&&jsbody.transaction.status){
+					self.status = jsbody.transaction.status;
+					return new Promise((resolve, reject) => {
+						resolve(self);
+					});;
+				}else{
+					sleep.sleep(3);
+					return self.deployed(cc+1);
+				}
+
+			});
+		}else
+		if(!this.txhash)
+		{
+			return new Promise((resolve, reject) => {
+				reject("txhash not found");
+			});
+		}else{
+			return new Promise((resolve, reject) => {
+				reject("call timeout");
+			});
+		}
+	}
+
 
 }
 class Contract {
@@ -89,10 +125,6 @@ class Contract {
 	}
 
 
-	// methods
-	deployed() {
-		return this.deployPromise;
-	}
 }
 
 export default{
