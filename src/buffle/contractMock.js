@@ -1,7 +1,9 @@
 
 
 var Buffle = require('./global.js')
+var config = require('config');
 
+var txtype = require('./cwvtxtype.js')
 var objectConstructor = {}.constructor;
 
 class RpcMethod{
@@ -54,18 +56,37 @@ class ContractInstance{
 
 }
 class Contract {
-	constructor(opts) {
+	constructor(args) {
 		// code
-		this.opts = opts;
-
+		this.args = args;
 	}
 
-	doDeploy(cwv){
-		this.deployPromise= new Promise((resolve, reject) => {
-			//TODO !在哪里发布合约到链上
-			resolve(new ContractInstance(this.opts,"0xdf2fc3cdc723c8f5be2f51b5d051ace6264008ad"));
-		})
-		return this.deployPromise;
+	doDeploy(cwv,opts){
+		console.log("contract = "+this.args.evm.deployedBytecode.object)
+		opts = opts||{};
+		var from = opts.from;
+		if(!from){
+			if(config.accounts.default&&config.accounts.default.length>20){
+				opts.from = config.accounts.default;
+			}else{
+				opts.from = Buffle.accounts[0];
+			}
+			from  = opts.from;
+		}
+		var kps = Buffle.keypairs[from];
+		if(!kps){
+			return new Promise((resolve, reject) => {
+				reject("keypair not found for address="+from);
+			});;
+		}
+		opts.keypair = kps;
+		var value = 0;
+		if(opts.value){
+			value = opts.value;	
+		}
+		opts.data = this.args.evm.deployedBytecode.object;
+		// console.log("ntxtype=="+txtype.TYPE_CreateContract);//txtype,toAddr,amount,opts
+		return  Buffle.cwv.rpc.sendTxTransaction(7,NaN,value,opts);
 	}
 
 
