@@ -9,25 +9,78 @@ var objectConstructor = {}.constructor;
 var abi = require('ethereumjs-abi')
 var accounts = require( "./accounts.js");
 
+class RpcResult {
 
+	constructor(rpcMethod,txHash){
+		this.rpcMethod = rpcMethod;
+		this.txHash = txHash;
+		this.resultObj = NaN;
+		console.log("new result::"+rpcMethod+",outputs="+rpcMethod.outputs);
+	}
+
+	toHexString(){
+		if(this.resultObj){
+			return this.resultObj;
+		}else{
+			return NaN;
+		}
+	}
+
+	getResult(cc){
+		cc=cc||0;
+		if(cc>30){
+			return new Promise((resolve, reject) => {
+				reject("timeout for get result:txhash="+this.txHash);
+			});				
+		}
+		var self = this;
+		return  Buffle.cwv.rpc.getTransaction(this.txHash).then(function(body){
+				// console.log("get tx  result =="+body);
+				var jsbody = JSON.parse(body);
+				if(jsbody.transaction&&jsbody.transaction.status){
+					var result = jsbody.transaction.result;
+					if(result&&jsbody.transaction.status=='D'){
+						// console.log("rpcoutputlen="+self.rpcMethod.outputs.length)
+						self.resultObj = abi.rawDecode(self.rpcMethod.outputs, Buffer.from(result,'hex'))
+						return new Promise((resolve, reject) => {
+							resolve(self);
+						});
+					}else{
+						return new Promise((resolve, reject) => {
+							reject("tx invoke error:"+self.txHash+",status="+jsbody.transaction.status+",result="+ jsbody.transaction.result);
+						});
+					}					
+				}else{
+					sleep.sleep(2);
+					return self.getResult(cc+1);
+				}
+
+		});
+	}
+}
 class RpcMethod{
-	constructor(contractinst,name,m_signature,inputcounts)
+	constructor(contractinst,name,m_signature,inputcounts,outputs)
 	{
 		this.contractinst =  contractinst;
 		this.method_name = name;
 		this.m_signature = m_signature;
 		this.inputcounts = inputcounts;
-		console.log("new abi method ="+this.method_name+",inst="+contractinst+",m_signature="+this.m_signature);
+		this.outputs = outputs;
+
+		console.log("new abi method ="+this.method_name+",inst="+contractinst+",m_signature="+this.m_signature
+			+",outputs="+JSON.stringify(this.outputs));
 	}
 
 	call(){
 		//在这里调用远程的方法方案
-		const args = Array.from(arguments);
+		var args = Array.from(arguments);
 		var opts = {};
 		if(args.length>0){
 			if(args[args.length-1].constructor.name == 'Object'){
 				opts = args[args.length-1];
+				args= args.slice(0,args.length-1);
 			}
+
 		}
 		var from = opts.from;
 		if(!from){
@@ -60,7 +113,7 @@ class RpcMethod{
 		}else{
 			abiargs.push(this.m_signature);
 		}
-		for(var arg in args.slice(1)){
+		for(var arg in args){
 			var type = typeof args[arg];
 			if(type=='object'){
 				var vv=[];
@@ -72,7 +125,7 @@ class RpcMethod{
 				abiargs.push(args[arg]);
 			}
 			
-			console.log("call "+this.m_signature+".arg["+arg+"]="+typeof(args[arg]))
+			console.log("call ."+this.m_signature+".arg["+arg+"]="+typeof(args[arg]))
 		}
 							// =constructor(address[]):(uint256)
 		var enc;
@@ -95,8 +148,25 @@ class RpcMethod{
 		console.log("enchex="+encHex);
 		
 		opts.data = encHex;
+		var self = this;
+
 		return  Buffle.cwv.rpc.sendTxTransaction(8,this.contractinst.address,value,opts).then(function(body){
-			console.log("get contract call ok:"+body)
+			console.log("get tx deploy result =="+body);
+			var jsbody = JSON.parse(body);
+			if(jsbody.txHash){
+				return new Promise((resolve, reject) => {
+
+					kps.increNonce();
+					accounts.saveKeyStore(kps);
+
+					resolve(new RpcResult(self,jsbody.txHash));
+				});
+
+			}else{
+				return new Promise((resolve, reject) => {
+					reject("send tx error:"+body);
+				});
+			}
 		});
 	}
 
@@ -130,16 +200,17 @@ class RpcMethod{
 	}
 }
 
+
 class ContractInstance{
 	constructor(contract,address,txhash) {
 		// code
 		//copy methods
-		console.log("new ContractInstance,methods.length="+contract.abiMethodName.length);
+		// console.log("new ContractInstance,methods.length="+contract.abiMethodName.length);
 		for(var i=0;i<contract.abiMethodName.length;i++)
 		{ 
 			var method_name  = contract.abiMethodName[i];
 			var method_sig = contract.abiMethodSign[i];
-			var rpcM = new RpcMethod(this,method_name,method_sig,contract.inputcounts[i]);
+			var rpcM = new RpcMethod(this,method_name,method_sig,contract.inputcounts[i],contract.outputs[i]);
 			var unbound=rpcM.call;
 			if(method_name.length>0){
 				this[method_name]=unbound.bind(rpcM)
@@ -148,8 +219,6 @@ class ContractInstance{
 				this.method_default = rpcM;
 			}
 		}
-
-		
 
 		this.contract = contract;
 		this.address = address;
@@ -172,7 +241,7 @@ class ContractInstance{
 						resolve(self);
 					});;
 				}else{
-					sleep.sleep(3);
+					sleep.sleep(1);
 					return self.deployed(cc+1);
 				}
 
@@ -200,6 +269,7 @@ class Contract {
 		this.abiMethodSign = [];
 
 		this.inputcounts = [];
+		this.outputs = [];
 
 		for(var abi in contract.abi)
 		{
@@ -230,19 +300,14 @@ class Contract {
 
 
 				//for ouput
-				// if(abidesc.outputs&&abidesc.outputs.length>0){
-				// 	m_signature=m_signature+":(";
-				// 	var paramsTypes = ""
-				// 	for (var param in abidesc.outputs) {
-				// 		paramsTypes = paramsTypes + abidesc.outputs[param]["type"] + ",";			
-	   //          	}
-	   //          	if(paramsTypes.length>0){
-    //         			paramsTypes = paramsTypes.substring(0,paramsTypes.length-1);
-    //         		}
-				// 	m_signature=m_signature+paramsTypes+")";
-				// }else{
-				// 	m_signature=m_signature+":(uint256)";
-				// }
+				var outs = [];
+				if(abidesc.outputs){
+					for (var param in abidesc.outputs) {
+						outs.push(abidesc.outputs[param]["type"]);			
+	            	}
+	            	
+				}
+				this.outputs.push(outs)
 				this.abiMethodName.push(abidesc.name+"")
 				this.abiMethodSign.push(m_signature);
 				this.inputcounts.push(abidesc.inputs.length);
@@ -286,7 +351,7 @@ class Contract {
 		if(opts.value){
 			value = opts.value;	
 		}
-		opts.data = this.args.evm.deployedBytecode.object;
+		opts.data = this.args.evm.bytecode.object;
 		// console.log("method_constructor=="+this.method_constructor.encode+",sig="+this.method_constructor.m_signature)
 
 		var args = Array.prototype.slice.call(arguments).slice(0,arguments.length-1)
@@ -320,5 +385,5 @@ class Contract {
 
 export default{
 	Contract:Contract,
-	ContractInstance:ContractInstance
+	ContractInstance:ContractInstance,
 }

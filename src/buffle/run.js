@@ -21,11 +21,19 @@ var _buildAndRun = function(){
 		accounts.ensureAccounts(config.accounts.num);
 
 		// console.log("mockup=="+cwvmockup.transfer);
-		var args=["mancount():(uint256)"];
-		
-		var bb=abi.methodID("getManCount",[]);
+		// var args=["mancount():(uint256)"];
+		// var decoded = abi.rawDecode(["uint256"], 
+		// 	Buffer.from("0000000000000000000000000000000000000000000000000000000000000001",'hex'))
+		// console.log("decoded=="+decoded)
+		//  decoded = abi.rawDecode(["address"], 
+		// 	Buffer.from("000000000000000000000000ca35b7d915458ef540ade6068dfe2f44e8fa733c",'hex'))
+		// console.log("decoded=="+decoded)
 
-		console.log("bb="+bb.toString('hex'));
+
+
+		// var bb=abi.methodID("getManCount",[]);
+
+		// console.log("bb="+bb.toString('hex'));
 		
 		var  Mocha =require('mocha')
 		// console.log("serveraddr.rpc="+config.network.rpc);

@@ -30,13 +30,30 @@ contract('#testall', function(accounts) {
 
 		console.log("get ManagerInst="+manInst.address);
 
-		manInst.deployed().then(function(inst){
+		p=manInst.deployed().then(function(inst){
 			console.log("deployed inst.address=="+inst.address+",txhash = "+inst.txhash);
-			manInst.getManCount().then(function(ret){
-				console.log("manInst.mancount.callback=="+ret);
+			manInst.getManCount().then(function(rpcresult){
+				console.log("manInst.mancount.callback=="+rpcresult);
+				rpcresult.getResult().then(function(ret){
+					console.log("manInst.mancount.rpcresult=="+ret.toHexString());
+				})
+			}).then(function(result){
+				sleep.sleep(10);
+				manInst.managers(accounts[0]).then(function(rpcresult){
+					console.log("manInst.changeReqs.callback=="+rpcresult);
+					rpcresult.getResult().then(function(ret){
+						console.log("manInst.changeReqs.rpcresult=="+ret.toHexString());
+						})
+				})
+
 			})
+
 		})
 
+		return p;
+
+		
+		
 
 
 	})

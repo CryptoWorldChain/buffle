@@ -29,11 +29,12 @@ module.exports.transfer =function (to,value,opts){
 		console.log("new value="+value);
 		return  Buffle.cwv.rpc.transfer(to,value,opts);
 	}
-	
-module.exports.getBalance =function  (addr,opts){
-	// console.log("cwv mockup getBalance");
-	return Buffle.cwv.rpc.getBalance(addr,opts);
-}
+
+	module.exports.getBalance =function  (addr,opts){
+		// console.log("cwv mockup getBalance");
+		return Buffle.cwv.rpc.getBalance(addr,opts);
+	}
+
 
 	module.exports.checkAndSetNonce =function  (addr,opts){
 	opts = opts||{};
