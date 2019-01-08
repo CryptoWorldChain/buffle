@@ -28,7 +28,6 @@ class RpcMethod{
 		console.log("calling rpc method=="+this.method_name+",contractaddr="+this.contractinst.address
 			+",from="+opts.from);
 
-
 		for(var arg in args){
 			console.log("arg=="+arg);
 		}
@@ -36,11 +35,11 @@ class RpcMethod{
 }
 
 class ContractInstance{
-	constructor(contract,address) {
+	constructor(contract,address,txhash) {
 		// code
-
 		this.contract = contract;
 		this.address = address;
+		this.txhash = txhash;
 		for(var abi in contract.abi)
 		{
 			var abidesc=contract.abi[abi];

@@ -34,7 +34,7 @@ module.exports.getBalance =function  (addr,opts){
 	return Buffle.cwv.rpc.getBalance(addr,opts);
 }
 
-module.exports.checkAndSetNonce =function  (addr,opts){
+	module.exports.checkAndSetNonce =function  (addr,opts){
 	opts = opts||{};
 	var from = opts.from;
 	if(!from){
@@ -59,6 +59,7 @@ module.exports.checkAndSetNonce =function  (addr,opts){
 		}else{
 			console.log("nonce not found");
 		}
+		return body;
 	});
 }
 

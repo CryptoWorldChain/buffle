@@ -22,11 +22,17 @@ contract('#testall', function(accounts) {
 
 
 	it('test.2-deploy contract', async function(accounts) {
-		
-		deployer.deploy(ManagerUpgradeable,{from:accounts[0]}).then(function(address){
-			console.log("get ManagerUpgradeable deploy address=="+address);
+		var manInst = NaN;
+		var p = deployer.deploy(ManagerUpgradeable,{from:accounts[0]}).then(function(inst){
+			console.log("get ManagerUpgradeable deploy inst.address=="+inst.address+",txhash = "+inst.txhash);
+			manInst=inst;
 		});
 
+		await p;
+
+		console.log("get ManagerInst="+manInst.address);
+
+		manInst
 
 	})
 
