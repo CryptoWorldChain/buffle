@@ -53,7 +53,7 @@ module.exports.transfer =function (to,value,opts){
 		var jsBody = JSON.parse(body);
 		var nonce = jsBody.account.nonce;
 		if(nonce){
-			var kps = Buffle.keypairs[from];
+			var kps = Buffle.keypairs[addr];
 			if(kps&&nonce!=kps.nonce){
 				kps.setNonce(nonce);
 				accounts.saveKeyStore(kps);
