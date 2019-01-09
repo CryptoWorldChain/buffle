@@ -25,9 +25,9 @@ var _buildAndRun = function(){
 		// var decoded = abi.rawDecode(["uint256"], 
 		// 	Buffer.from("0000000000000000000000000000000000000000000000000000000000000001",'hex'))
 		// console.log("decoded=="+decoded)
-		//  decoded = abi.rawDecode(["address"], 
-		// 	Buffer.from("000000000000000000000000ca35b7d915458ef540ade6068dfe2f44e8fa733c",'hex'))
-		// console.log("decoded=="+decoded)
+		var decoded = abi.rawDecode(["bytes32"], 
+			Buffer.from("06761d9658b32d8e19bc9ba223cfb66f6f1368e142c526e1ee0e5f428fc593c7",'hex'))
+		console.log("decoded=="+new Buffer(decoded.constructor))
 
 
 

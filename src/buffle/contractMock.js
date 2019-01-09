@@ -40,7 +40,7 @@ class RpcResult {
 				if(jsbody.transaction&&jsbody.transaction.status){
 					var result = jsbody.transaction.result;
 					if(result&&jsbody.transaction.status=='D'){
-						// console.log("rpcoutputlen="+self.rpcMethod.outputs.length)
+						console.log("rpcoutputlen="+self.rpcMethod.outputs)
 						self.resultObj = abi.rawDecode(self.rpcMethod.outputs, Buffer.from(result,'hex'))
 						return new Promise((resolve, reject) => {
 							resolve(self);
