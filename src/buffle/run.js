@@ -27,7 +27,8 @@ var _buildAndRun = function(){
 		// console.log("decoded=="+decoded)
 		var decoded = abi.rawDecode(["bytes32"], 
 			Buffer.from("06761d9658b32d8e19bc9ba223cfb66f6f1368e142c526e1ee0e5f428fc593c7",'hex'))
-		console.log("decoded=="+new Buffer(decoded.constructor))
+		console.log("decode.len="+decoded.length);
+		console.log("decoded=="+ new Buffer(decoded[0]).toString('hex'))
 
 
 

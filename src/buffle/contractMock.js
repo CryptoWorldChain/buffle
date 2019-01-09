@@ -15,10 +15,17 @@ class RpcResult {
 		this.rpcMethod = rpcMethod;
 		this.txHash = txHash;
 		this.resultObj = NaN;
-		console.log("new result::"+rpcMethod+",outputs="+rpcMethod.outputs);
+		// console.log("new result::"+rpcMethod+",outputs="+rpcMethod.outputs);
 	}
 
 	toHexString(){
+		if(this.rpcMethod.outputs.length==1){
+			if(this.rpcMethod.outputs[0]=='bytes32')
+			{
+				// console.log("setv")
+				return new Buffer(this.resultObj[0]).toString('hex');
+			}
+		}
 		if(this.resultObj){
 			return this.resultObj;
 		}else{
@@ -40,7 +47,7 @@ class RpcResult {
 				if(jsbody.transaction&&jsbody.transaction.status){
 					var result = jsbody.transaction.result;
 					if(result&&jsbody.transaction.status=='D'){
-						console.log("rpcoutputlen="+self.rpcMethod.outputs)
+						// console.log("rpcoutputlen="+self.rpcMethod.outputs.length+",="+self.rpcMethod.outputs)
 						self.resultObj = abi.rawDecode(self.rpcMethod.outputs, Buffer.from(result,'hex'))
 						return new Promise((resolve, reject) => {
 							resolve(self);
@@ -67,8 +74,8 @@ class RpcMethod{
 		this.inputcounts = inputcounts;
 		this.outputs = outputs;
 
-		console.log("new abi method ="+this.method_name+",inst="+contractinst+",m_signature="+this.m_signature
-			+",outputs="+JSON.stringify(this.outputs));
+		// console.log("new abi method ="+this.method_name+",inst="+contractinst+",m_signature="+this.m_signature
+		// 	+",outputs="+JSON.stringify(this.outputs));
 	}
 
 	call(){
@@ -103,8 +110,8 @@ class RpcMethod{
 			value = opts.value;	
 		}
 
-		console.log("calling rpc method=="+this.method_name+",contractaddr="+this.contractinst.address
-			+",from="+opts.from);
+		// console.log("calling rpc method=="+this.method_name+",contractaddr="+this.contractinst.address
+		// 	+",from="+opts.from);
 
 		var abiargs=[];
 
@@ -129,7 +136,7 @@ class RpcMethod{
 		}
 							// =constructor(address[]):(uint256)
 		var enc;
-		console.log("abi encode:"+this.method_name+",argslength="+(abiargs.length-1)+",this.inputcounts="+this.inputcounts);
+		// console.log("abi encode:"+this.method_name+",argslength="+(abiargs.length-1)+",this.inputcounts="+this.inputcounts);
 
 		if(this.inputcounts == 0){
 			enc=abi.methodID(this.method_name,[]);
@@ -145,13 +152,13 @@ class RpcMethod{
 
 		var encHex =  new Buffer(enc).toString('hex');
 
-		console.log("enchex="+encHex);
+		// console.log("enchex="+encHex);
 		
 		opts.data = encHex;
 		var self = this;
 
 		return  Buffle.cwv.rpc.sendTxTransaction(8,this.contractinst.address,value,opts).then(function(body){
-			console.log("get tx deploy result =="+body);
+			// console.log("get tx deploy result =="+body);
 			var jsbody = JSON.parse(body);
 			if(jsbody.txHash){
 				return new Promise((resolve, reject) => {
@@ -233,7 +240,7 @@ class ContractInstance{
 		{
 			var self = this;
 			return  Buffle.cwv.rpc.getTransaction(this.txhash).then(function(body){
-				console.log("get tx deploy result =="+body);
+				// console.log("get tx deploy result =="+body);
 				var jsbody = JSON.parse(body);
 				if(jsbody.transaction&&jsbody.transaction.status){
 					self.status = jsbody.transaction.status;
