@@ -75,8 +75,8 @@ contract TokenStore is LockIdGen {
         mancount = numMans;
     }
 
-    function addManager(address _addr) public returns(bool success){
-         managers[_addr] = _addr;
+    function addManager(address _addr) public returns(bool success){         
+         managers[_addr] = address(_addr);//_addr;
          mancount = mancount + 1;
          return true;
 

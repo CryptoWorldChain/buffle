@@ -132,7 +132,7 @@ class RpcMethod{
 				abiargs.push(args[arg]);
 			}
 			
-			console.log("call ."+this.m_signature+".arg["+arg+"]="+typeof(args[arg]))
+			// console.log("call ."+this.m_signature+".arg["+arg+"]="+typeof(args[arg])+",v="+args[arg])
 		}
 							// =constructor(address[]):(uint256)
 		var enc;
@@ -143,10 +143,12 @@ class RpcMethod{
 		}else{
 			enc = abi.simpleEncode.apply(abi,abiargs);
 		}
-		if(enc.length>4){
-			enc = enc.slice(0,4);
-		}
+
+		
 		if(this.method_name.length==0){
+			if(enc.length>4){
+				enc = enc.slice(0,4);
+			}
 			enc = enc.slice(4)
 		}		
 
