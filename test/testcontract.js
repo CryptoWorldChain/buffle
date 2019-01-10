@@ -41,33 +41,63 @@ contract('#testall', function(accounts) {
 		p=manInst.deployed().then(function(inst){
 			console.log("deployed inst.address=="+inst.address+",txhash = "+inst.txhash);
 			manInst.mancount().then(function(rpcresult){
-				// console.log("manInst.mancount.callback=="+rpcresult);
+					// console.log("manInst.mancount.2.callback=="+rpcresult);
 				return rpcresult.getResult().then(function(ret){
 					console.log("manInst.mancount.rpcresult=="+ret.toHexString());
 				})
 			})
-			.then(function(ret){
-				return	manInst.addManager(accounts[1],{from:accounts[1]}).then(function(rpcresult){
-						// console.log("manInst.checkManager.callback=="+rpcresult);
-						return rpcresult.getResult().then(function(ret){
-							console.log("manInst.checkManager.rpcresult=="+ret.toHexString());
-						}) 
-					})
-			}).then(function(ret){
-				return manInst.generateLockId({from:accounts[1]}).then(function(rpcresult){
-					// console.log("manInst.generateLockId.callback=="+rpcresult);
-					return rpcresult.getResult().then(function(ret){
-						console.log("manInst.generateLockId.rpcresult=="+ret.toHexString());
-						})
-					})
-			}).then(function (r){
-				manInst.managers(accounts[1]).then(function(rpcresult){
+			manInst.testmapp2(accounts[0],accounts[0]).then(function(rpcresult){
 					// console.log("manInst.mancount.2.callback=="+rpcresult);
-					return rpcresult.getResult().then(function(ret){
-						console.log("manInst.mancount.rpcresult=="+ret.toHexString());
-					})
+				return rpcresult.getResult().then(function(ret){
+					console.log("manInst.testmapp2.rpcresult=="+ret.toHexString());
 				})
 			})
+			manInst.testmapp3(accounts[0],accounts[0],accounts[0]).then(function(rpcresult){
+				// console.log("manInst.mancount.2.callback=="+rpcresult);
+				return rpcresult.getResult().then(function(ret){
+					console.log("manInst.testmapp2.rpcresult=="+ret.toHexString());
+				})
+			})
+			manInst.managers(accounts[0]).then(function(rpcresult){
+				// console.log("manInst.mancount.callback=="+rpcresult);
+				return rpcresult.getResult().then(function(ret){
+					console.log("manInst.managers.rpcresult=="+ret);
+				})
+			})
+			.then(function(ret){
+			return	manInst.addManager(accounts[1],{from:accounts[1]}).then(function(rpcresult){
+					// console.log("manInst.checkManager.callback=="+rpcresult);
+					return rpcresult.getResult().then(function(ret){
+						console.log("manInst.addManager.rpcresult=="+ret.toHexString());
+					}) 
+				})}).then(function(ret){
+					return manInst.generateLockId({from:accounts[1]}).then(function(rpcresult){
+						// console.log("manInst.generateLockId.callback=="+rpcresult);
+						return rpcresult.getResult().then(function(ret){
+							console.log("manInst.generateLockId.rpcresult=="+ret.toHexString());
+							})
+						})
+				}).then(function (r){
+					manInst.managers(accounts[1]).then(function(rpcresult){
+						// console.log("manInst.mancount.2.callback=="+rpcresult);
+						return rpcresult.getResult().then(function(ret){
+							console.log("manInst.mancount.rpcresult=="+ret.toHexString());
+						})
+					})
+					manInst.testmapp2(accounts[1],accounts[1]).then(function(rpcresult){
+						// console.log("manInst.mancount.2.callback=="+rpcresult);
+						return rpcresult.getResult().then(function(ret){
+							console.log("manInst.testmapp2.rpcresult=="+ret.toHexString());
+						})
+					})
+					manInst.testmapp3(accounts[1],accounts[1],accounts[1]).then(function(rpcresult){
+						// console.log("manInst.mancount.2.callback=="+rpcresult);
+						return rpcresult.getResult().then(function(ret){
+							console.log("manInst.testmapp2.rpcresult=="+ret.toHexString());
+						})
+					})
+				})
+
 			
 			
 		})

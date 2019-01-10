@@ -30,6 +30,8 @@ library SafeMath {
   }
 }
 
+
+
 contract LockIdGen {
 
     uint256 public requestCount;
@@ -43,20 +45,24 @@ contract LockIdGen {
     }
 }
 
-
 contract TokenStore is LockIdGen {
 
     struct ChangeRequest {
         address proposedNew;
         address proposedClear;
     }
+    uint256     public    mancount  ;
+
 
     // address public custodian;
     mapping (address => address) public managers;
 
     mapping (bytes32 => ChangeRequest) public changeReqs;
 
-    uint256     public    mancount  ;
+
+    mapping (address => mapping(address=>uint256)) public testmapp2;
+    mapping (address => mapping(address=>mapping(address=>uint256))) public testmapp3;
+
 
 
     // CONSTRUCTOR
@@ -67,16 +73,22 @@ contract TokenStore is LockIdGen {
       public
     {
         uint256 numMans = _mans.length;
+        mancount = numMans*10;
         for (uint256 i = 0; i < numMans; i++) {
           address pto = _mans[i];
           require(pto != address(0));
           managers[pto] = pto;
+          testmapp2[pto][pto] = 2222;
+          testmapp3[pto][pto][pto] = 3333;
+
         }
-        mancount = numMans;
+        
     }
 
     function addManager(address _addr) public returns(bool success){         
          managers[_addr] = address(_addr);//_addr;
+         testmapp2[_addr][_addr] = 2;
+         testmapp3[_addr][_addr][_addr] = 3;
          mancount = mancount + 1;
          return true;
 
@@ -148,5 +160,5 @@ contract TokenStore is LockIdGen {
     event ChangeSweep(bytes32 _lockId, address _sender);
 
 
-
 }
+

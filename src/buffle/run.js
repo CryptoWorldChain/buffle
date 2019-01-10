@@ -8,6 +8,7 @@ import config from 'config'
 import accounts from "./accounts";
 
 import abi from 'ethereumjs-abi';
+import Keccak  from "sha3";
 
 
 
@@ -25,10 +26,18 @@ var _buildAndRun = function(){
 		// var decoded = abi.rawDecode(["uint256"], 
 		// 	Buffer.from("0000000000000000000000000000000000000000000000000000000000000001",'hex'))
 		// console.log("decoded=="+decoded)
-		var decoded = abi.rawDecode(["bytes32"], 
-			Buffer.from("06761d9658b32d8e19bc9ba223cfb66f6f1368e142c526e1ee0e5f428fc593c7",'hex'))
-		console.log("decode.len="+decoded.length);
-		console.log("decoded=="+ new Buffer(decoded[0]).toString('hex'))
+		// var decoded = abi.rawDecode(["bytes32"], 
+		// 	Buffer.from("06761d9658b32d8e19bc9ba223cfb66f6f1368e142c526e1ee0e5f428fc593c7",'hex'))
+		// console.log("decode.len="+decoded.length);
+		// console.log("decoded=="+ new Buffer(decoded[0]).toString('hex'))
+		var key = "00000000000000000000000069ee6d7cc0be11ceb79ed7679144543e62a095440000000000000000000000000000000000000000000000000000000000000001";
+		console.log("requestkey=="+key);
+		var hash=new Keccak(256);
+		hash.update(Buffer.from(key,'hex'));
+
+		var keyhex=new Buffer(hash.digest()).toString('hex');
+		console.log("keyhex="+keyhex);
+
 
 
 

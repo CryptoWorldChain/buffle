@@ -65,6 +65,7 @@
     "request-promise": "^4.2.2",
     "sandboxed-module": "^2.0.3",
     "sha2": "^1.0.2",
+    "sha3": "^2.0.0",
     "sinon": "^7.2.2",
     "sleep": "^5.2.3",
     "solc": "^0.4.25"

@@ -8,14 +8,25 @@ var sleep=require('sleep');
 var objectConstructor = {}.constructor;
 var abi = require('ethereumjs-abi')
 var accounts = require( "./accounts.js");
+//const { Keccak } = require('sha3');
+import Keccak  from "sha3";
 
 class RpcResult {
 
-	constructor(rpcMethod,txHash){
+	constructor(rpcMethod,txHash,resultObj){
 		this.rpcMethod = rpcMethod;
 		this.txHash = txHash;
-		this.resultObj = NaN;
-		// console.log("new result::"+rpcMethod+",outputs="+rpcMethod.outputs);
+		this.resultObj = resultObj;
+		if(resultObj){
+			try{
+				// console.log("add result")
+				this.resultObj = abi.rawDecode(this.rpcMethod.outputs, Buffer.from(resultObj,'hex'))
+			}catch(err){
+				console.log("error;"+err+",resultObj="+resultObj)
+				this.resultObj = resultObj;
+			}
+		}
+		// console.log("new result::"+rpcMethod+",outputs="+rpcMethod.outputs+",result="+this.resultObj);
 	}
 
 	toHexString(){
@@ -24,6 +35,8 @@ class RpcResult {
 			{
 				// console.log("setv")
 				return new Buffer(this.resultObj[0]).toString('hex');
+			}else if(this.resultObj[0].constructor.name=='Array'){
+				return this.resultObj[0].toString('hex');
 			}
 		}
 		if(this.resultObj){
@@ -34,13 +47,21 @@ class RpcResult {
 	}
 
 	getResult(cc){
+		
+		var self = this;
+		if(this.resultObj){
+			// console.log("return object directly:"+this.resultObj)
+			return new Promise((resolve, reject) => {
+					resolve(self);
+				});
+		};
 		cc=cc||0;
 		if(cc>30){
 			return new Promise((resolve, reject) => {
 				reject("timeout for get result:txhash="+this.txHash);
 			});				
 		}
-		var self = this;
+		
 		return  Buffle.cwv.rpc.getTransaction(this.txHash).then(function(body){
 				// console.log("get tx  result =="+body);
 				var jsbody = JSON.parse(body);
@@ -66,16 +87,53 @@ class RpcResult {
 	}
 }
 class RpcMethod{
-	constructor(contractinst,name,m_signature,inputcounts,outputs)
+	constructor(contractinst,name,m_signature,inputcounts,outputs,constFieldID)
 	{
 		this.contractinst =  contractinst;
 		this.method_name = name;
 		this.m_signature = m_signature;
 		this.inputcounts = inputcounts;
 		this.outputs = outputs;
+		this.constFieldID = constFieldID;
 
 		// console.log("new abi method ="+this.method_name+",inst="+contractinst+",m_signature="+this.m_signature
 		// 	+",outputs="+JSON.stringify(this.outputs));
+	}
+	sha3encode(key){
+		var hash=new Keccak(256);
+		hash.update(Buffer.from(key,'hex'));
+
+		var keyhex=new Buffer(hash.digest()).toString('hex');
+		// console.log("keyhex="+keyhex);
+		return keyhex;
+	}
+
+	requestConst(args){
+		//is const.
+		//console.log("requestConst,args==="+args.length);
+
+		var key = "";
+		var field=""+this.constFieldID;
+		for(var i in args){
+			var pad = args[i];
+			// console.log("requestConst,args["+i+"]=="+pad);
+			if(pad.startsWith("0x")){
+				pad = pad.slice(2);
+			}
+			key = pad.padStart(64,'0')+key;
+			if(i==0){
+				key = this.sha3encode(key+field.padStart(64,'0'))
+			}else{
+				key = this.sha3encode(key)
+			}
+		}
+		if(args.length==0){
+			key=field.padStart(64,'0');
+		}
+		console.log("keyhex="+key);
+
+		return key;
+
 	}
 
 	call(){
@@ -111,76 +169,97 @@ class RpcMethod{
 		}
 
 		// console.log("calling rpc method=="+this.method_name+",contractaddr="+this.contractinst.address
-		// 	+",from="+opts.from);
+		// 	+",from="+opts.from+",constFieldID="+this.constFieldID);
 
 		var abiargs=[];
-
-		if(this.method_name.length==0){
-			abiargs.push("default"+this.m_signature);
-		}else{
-			abiargs.push(this.m_signature);
-		}
-		for(var arg in args){
-			var type = typeof args[arg];
-			if(type=='object'){
-				var vv=[];
-				for(var i=0;i<args[arg].length;i++){
-					vv[i]=args[arg][i];
-				}
-				abiargs.push(vv);
+		if(this.constFieldID<0){
+//	normal method
+			if(this.method_name.length==0){
+				abiargs.push("default"+this.m_signature);
 			}else{
-				abiargs.push(args[arg]);
+				abiargs.push(this.m_signature);
 			}
+			for(var arg in args){
+				var type = typeof args[arg];
+				if(type=='object'){
+					var vv=[];
+					for(var i=0;i<args[arg].length;i++){
+						vv[i]=args[arg][i];
+					}
+					abiargs.push(vv);
+				}else{
+					abiargs.push(args[arg]);
+				}				
+				// console.log("call ."+this.m_signature+".arg["+arg+"]="+typeof(args[arg])+",v="+args[arg])
+			}
+			// =constructor(address[]):(uint256)
+
+			var enc;
+			// console.log("abi encode:"+this.method_name+",argslength="+(abiargs.length-1)+",this.inputcounts="+this.inputcounts);
+
+			if(this.inputcounts == 0){
+				enc=abi.methodID(this.method_name,[]);
+			}else{
+				enc = abi.simpleEncode.apply(abi,abiargs);
+			}
+
 			
-			// console.log("call ."+this.m_signature+".arg["+arg+"]="+typeof(args[arg])+",v="+args[arg])
-		}
-							// =constructor(address[]):(uint256)
-		var enc;
-		// console.log("abi encode:"+this.method_name+",argslength="+(abiargs.length-1)+",this.inputcounts="+this.inputcounts);
+			if(this.method_name.length==0){
+				if(enc.length>4){
+					enc = enc.slice(0,4);
+				}
+				enc = enc.slice(4)
+			}		
+			//
 
-		if(this.inputcounts == 0){
-			enc=abi.methodID(this.method_name,[]);
+
+			var encHex =  new Buffer(enc).toString('hex');
+
+			// console.log("enchex="+encHex);
+			
+			opts.data = encHex;
+			var self = this;
+
+			return  Buffle.cwv.rpc.sendTxTransaction(8,this.contractinst.address,value,opts).then(function(body){
+				// console.log("get tx deploy result =="+body);
+				var jsbody = JSON.parse(body);
+				if(jsbody.txHash){
+					return new Promise((resolve, reject) => {
+
+						kps.increNonce();
+						accounts.saveKeyStore(kps);
+
+						resolve(new RpcResult(self,jsbody.txHash));
+					});
+
+				}else{
+					return new Promise((resolve, reject) => {
+						reject("send tx error:"+body);
+					});
+				}
+			});
 		}else{
-			enc = abi.simpleEncode.apply(abi,abiargs);
+			var hex=this.requestConst(args);
+			var self = this;
+			return Buffle.cwv.rpc.getStorageValue([this.contractinst.address,hex]).then(function(body){
+				// console.log("get storage by key=="+self.method_name+",body="+body);
+				var jsbody = JSON.parse(body);
+				if(jsbody.content){
+					return new Promise((resolve, reject) => {
+						resolve(new RpcResult(self,hex,jsbody.content[0]));
+					});
+				}else{
+					return new Promise((resolve, reject) => {
+						resolve(new RpcResult(self,hex,""));
+					})
+				}
+			})
 		}
-
 		
-		if(this.method_name.length==0){
-			if(enc.length>4){
-				enc = enc.slice(0,4);
-			}
-			enc = enc.slice(4)
-		}		
-
-		var encHex =  new Buffer(enc).toString('hex');
-
-		// console.log("enchex="+encHex);
-		
-		opts.data = encHex;
-		var self = this;
-
-		return  Buffle.cwv.rpc.sendTxTransaction(8,this.contractinst.address,value,opts).then(function(body){
-			// console.log("get tx deploy result =="+body);
-			var jsbody = JSON.parse(body);
-			if(jsbody.txHash){
-				return new Promise((resolve, reject) => {
-
-					kps.increNonce();
-					accounts.saveKeyStore(kps);
-
-					resolve(new RpcResult(self,jsbody.txHash));
-				});
-
-			}else{
-				return new Promise((resolve, reject) => {
-					reject("send tx error:"+body);
-				});
-			}
-		});
 	}
 
 	encode(){
-		console.log('encode::this.m_signature='+this.m_signature)
+		// console.log('encode::this.m_signature='+this.m_signature)
 		var args=[this.m_signature];
 		for(var arg in arguments){
 			var type= typeof arguments[arg];
@@ -219,7 +298,11 @@ class ContractInstance{
 		{ 
 			var method_name  = contract.abiMethodName[i];
 			var method_sig = contract.abiMethodSign[i];
-			var rpcM = new RpcMethod(this,method_name,method_sig,contract.inputcounts[i],contract.outputs[i]);
+
+			var constFieldID = contract.constFields.indexOf(method_name);
+			// console.log("contract.constFields=="+JSON.stringify(contract.constFields)+",methodname="+method_name
+			// 	+",index="+constFieldID);
+			var rpcM = new RpcMethod(this,method_name,method_sig,contract.inputcounts[i],contract.outputs[i],constFieldID);
 			var unbound=rpcM.call;
 			if(method_name.length>0){
 				this[method_name]=unbound.bind(rpcM)
@@ -279,7 +362,24 @@ class Contract {
 
 		this.inputcounts = [];
 		this.outputs = [];
-
+		var constFileds= [];
+		var lines=contract.evm.assembly.split("\n");
+		var codelines = [];
+		var codedef = "";
+		var codes = ""
+		for(var i =0;i<lines.length;i++)
+		{
+			var line = lines[i].trim();
+			if(line.startsWith("/*")||line.endsWith("*/")){
+				codelines.push(codedef);
+				codelines.push(codes);
+				codedef = line;
+				codes = "";
+			}else
+			{
+				codes = codes+lines[i].trim();
+			}
+		}
 		for(var abi in contract.abi)
 		{
 			var abidesc=contract.abi[abi];
@@ -320,20 +420,42 @@ class Contract {
 				this.abiMethodName.push(abidesc.name+"")
 				this.abiMethodSign.push(m_signature);
 				this.inputcounts.push(abidesc.inputs.length);
-				// var rpcM = new RpcMethod(NaN,abidesc.name,m_signature);
-				// var unbound=rpcM.call;
-				// if(abidesc.name){
-				// 	this[abidesc.name]=unbound.bind(rpcM)
-				// 	this[abidesc.name].call = this[abidesc.name];
-				// }else
 				if(abidesc.type=='constructor'){
-					console.log("get constructor=="+m_signature)
+					// console.log("get constructor=="+m_signature)
 					this.method_constructor = new RpcMethod(NaN,abidesc.name,m_signature);
-				// }else{
-				// 	this.method_default = rpcM;
+				}
+				// console.log("abidesc.constant=="+abidesc.constant+",length="+codelines.length)
+				if(abidesc.constant){
+					var idfound = 0;
+					
+					for(var li =0;li<codelines.length-1;li+=2){
+						var trydef=codelines[li].split(" ");
+						if(trydef[3]==abidesc.name){
+							var trycode = codelines[li+1].split(" ");
+							
+							if(trycode.length==1&&trycode[0].startsWith("0x") && 
+								Number.parseInt(trycode[0],16).toString(16).length==trycode[0].length - 2
+								){
+
+								idfound = Number.parseInt(trycode[0].substring(2),16);
+
+								// console.log("try:"+abidesc.name+",line="+codelines[li]+",trycode="+trycode+",found;"+idfound)
+							}
+						}
+					}
+
+					constFileds.push({name:abidesc.name,idx:idfound});
+
 				}
 			}			
 		}
+		this.constFields =  constFileds.sort(function (a, b) {
+		  return (a.idx - b.idx)
+		}).map(function(cb){return cb.name})
+
+
+		// this.constFields = this.constFields.sort();
+
 
 	}
 
@@ -365,20 +487,20 @@ class Contract {
 
 		var args = Array.prototype.slice.call(arguments).slice(0,arguments.length-1)
 
-		console.log("args=="+args.length);
+		// console.log("args=="+args.length);
 		
 		var constructorenc = this.method_constructor.encode.apply(this.method_constructor,args);
-		console.log("constructorenc="+constructorenc);
+		// console.log("constructorenc="+constructorenc);
 		opts.data = opts.data.concat(constructorenc);
 		var self = this;
 		// console.log("ntxtype=="+txtype.TYPE_CreateContract);//txtype,toAddr,amount,opts
 		return  Buffle.cwv.rpc.sendTxTransaction(7,NaN,value,opts).then(function (body){
-				console.log("contract.doDeploy.return body=="+body)
+				// console.log("contract.doDeploy.return body=="+body)
 				if(body){
 					var jsbody = JSON.parse(body);
 					if(jsbody.contractHash){
 						var inst = new ContractInstance(self,jsbody.contractHash,jsbody.txHash)
-						console.log("create Contract OKOK:"+inst.constructor.name);
+						// console.log("create Contract OKOK:"+inst.constructor.name);
 						kps.increNonce();
 						accounts.saveKeyStore(kps);
 						return inst;
