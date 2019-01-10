@@ -9,24 +9,45 @@ var objectConstructor = {}.constructor;
 var abi = require('ethereumjs-abi')
 var accounts = require( "./accounts.js");
 //const { Keccak } = require('sha3');
+var BN=require("bn.js")
 import Keccak  from "sha3";
 
 class RpcResult {
 
-	constructor(rpcMethod,txHash,resultObj){
+	constructor(rpcMethod,txHash,resultObj,index){
 		this.rpcMethod = rpcMethod;
 		this.txHash = txHash;
 		this.resultObj = resultObj;
+		this.index = index||0;
 		if(resultObj){
 			try{
 				// console.log("add result")
-				this.resultObj = abi.rawDecode(this.rpcMethod.outputs, Buffer.from(resultObj,'hex'))
+				if(this.rpcMethod.outputs.length==1)
+				{
+					this.resultObj = abi.rawDecode(this.rpcMethod.outputs, Buffer.from(resultObj,'hex'))
+				}else
+				if(resultObj.length==this.rpcMethod.outputs.length)
+				{
+					//merge result
+					// console.log("merge results:"+resultObj.length+",outlen="+this.rpcMethod.outputs.length);
+					var ret = {}
+					for (var i = 0; i < this.rpcMethod.outputs.length && i < resultObj.length; i++) {
+						// console.log("get results:"+i+"==>"+resultObj[i].toHexString());
+						ret[this.rpcMethod.outputs_name[i]] = resultObj[i].toHexString();
+					}
+					this.resultObj = ret;
+				}else
+				{
+					// console.log("get one results:"+resultObj+",outlen="+this.rpcMethod.outputs.length+",idx="+this.index);
+
+					this.resultObj = abi.rawDecode([this.rpcMethod.outputs[this.index]], Buffer.from(resultObj,'hex'))
+				}
 			}catch(err){
-				console.log("error;"+err+",resultObj="+resultObj)
+				console.log("error;"+err+",resultObj="+resultObj,err)
 				this.resultObj = resultObj;
 			}
 		}
-		// console.log("new result::"+rpcMethod+",outputs="+rpcMethod.outputs+",result="+this.resultObj);
+		// console.log("new result::"+rpcMethod.method_name+",outputs="+rpcMethod.outputs+",result="+this.resultObj);
 	}
 
 	toHexString(){
@@ -40,6 +61,7 @@ class RpcResult {
 			}
 		}
 		if(this.resultObj){
+
 			return this.resultObj;
 		}else{
 			return NaN;
@@ -87,13 +109,14 @@ class RpcResult {
 	}
 }
 class RpcMethod{
-	constructor(contractinst,name,m_signature,inputcounts,outputs,constFieldID)
+	constructor(contractinst,name,m_signature,inputcounts,outputs,outputs_name,constFieldID)
 	{
 		this.contractinst =  contractinst;
 		this.method_name = name;
 		this.m_signature = m_signature;
 		this.inputcounts = inputcounts;
 		this.outputs = outputs;
+		this.outputs_name = outputs_name
 		this.constFieldID = constFieldID;
 
 		// console.log("new abi method ="+this.method_name+",inst="+contractinst+",m_signature="+this.m_signature
@@ -130,7 +153,8 @@ class RpcMethod{
 		if(args.length==0){
 			key=field.padStart(64,'0');
 		}
-		console.log("keyhex="+key);
+
+		// console.log("keyhex="+key);
 
 		return key;
 
@@ -241,21 +265,41 @@ class RpcMethod{
 		}else{
 			var hex=this.requestConst(args);
 			var self = this;
-			return Buffle.cwv.rpc.getStorageValue([this.contractinst.address,hex]).then(function(body){
-				// console.log("get storage by key=="+self.method_name+",body="+body);
-				var jsbody = JSON.parse(body);
-				if(jsbody.content){
-					return new Promise((resolve, reject) => {
-						resolve(new RpcResult(self,hex,jsbody.content[0]));
-					});
-				}else{
-					return new Promise((resolve, reject) => {
-						resolve(new RpcResult(self,hex,""));
-					})
-				}
-			})
+			var p=[]
+			var getp=function(idx){
+				return Buffle.cwv.rpc.getStorageValue([self.contractinst.address,hex]).then(function(body){
+					// console.log("get storage by key=="+self.method_name+",body="+body);
+					var jsbody = JSON.parse(body);
+					if(jsbody.content){
+						return new Promise((resolve, reject) => {
+							resolve(new RpcResult(self,hex,jsbody.content[0],idx));
+						});
+					}else{
+						return new Promise((resolve, reject) => {
+							resolve(new RpcResult(self,hex,"",idx));
+						})
+					}
+				})
+			}
+			for(var i=0;i<this.outputs.length;i++){
+				var req=getp(i);
+				p.push(req);
+				hex = new BN(hex,'hex').add(new BN(1)).toString(16).padStart(64,'0');
+			}
+			if(p.length==1){
+				return p[0]
+			}			
+			return Promise.all(p).then(function(values){
+				// console.log("get values:"+values);
+				// var ret = {}
+				// for(var i=0;i<this.outputs.length;i++){
+				// 	ret[this.outputs[i].name]=values[i].toHexString();
+				// }
+				return new Promise((resolve, reject) => {
+						resolve(new RpcResult(self,hex,values,values.length));
+				})
+			});
 		}
-		
 	}
 
 	encode(){
@@ -302,7 +346,8 @@ class ContractInstance{
 			var constFieldID = contract.constFields.indexOf(method_name);
 			// console.log("contract.constFields=="+JSON.stringify(contract.constFields)+",methodname="+method_name
 			// 	+",index="+constFieldID);
-			var rpcM = new RpcMethod(this,method_name,method_sig,contract.inputcounts[i],contract.outputs[i],constFieldID);
+			var rpcM = new RpcMethod(this,method_name,method_sig,contract.inputcounts[i],contract.outputs[i],
+				contract.outputs_name[i],constFieldID);
 			var unbound=rpcM.call;
 			if(method_name.length>0){
 				this[method_name]=unbound.bind(rpcM)
@@ -363,6 +408,7 @@ class Contract {
 		this.inputcounts = [];
 		this.outputs = [];
 		var constFileds= [];
+		this.outputs_name = [];
 		var lines=contract.evm.assembly.split("\n");
 		var codelines = [];
 		var codedef = "";
@@ -410,13 +456,16 @@ class Contract {
 
 				//for ouput
 				var outs = [];
+				var outs_name = [];
 				if(abidesc.outputs){
 					for (var param in abidesc.outputs) {
-						outs.push(abidesc.outputs[param]["type"]);			
+						outs.push(abidesc.outputs[param]["type"]);	
+						outs_name.push(abidesc.outputs[param]["name"]);		
 	            	}
 	            	
 				}
 				this.outputs.push(outs)
+				this.outputs_name.push(outs_name)
 				this.abiMethodName.push(abidesc.name+"")
 				this.abiMethodSign.push(m_signature);
 				this.inputcounts.push(abidesc.inputs.length);

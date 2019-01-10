@@ -96,6 +96,20 @@ contract('#testall', function(accounts) {
 							console.log("manInst.testmapp2.rpcresult=="+ret.toHexString());
 						})
 					})
+				}).then(function(rpcresult){
+					console.log("=====>> requestChange")
+					return manInst.requestChange(accounts[3],"0x0",{from:accounts[0]});
+				}).then(function (rpcresult){
+					console.log("==>requestChange.rpcresult=="+rpcresult);
+					return rpcresult.getResult();
+				}).then(function(rpcresult){
+					console.log("==>request instid=="+rpcresult.toHexString())
+					return manInst.changeReqs(rpcresult.toHexString()).then(function(rpcresult){
+						// console.log("manInst.mancount.2.callback=="+rpcresult);
+						return rpcresult.getResult().then(function(ret){
+							console.log("===>request instid.result=="+JSON.stringify(ret.resultObj));
+						})
+					})
 				})
 
 			
