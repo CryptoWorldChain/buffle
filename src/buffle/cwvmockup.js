@@ -4,7 +4,49 @@ import Buffle from './global';
 import config from 'config';
 import BN  from "bn.js";
 import accounts from "./accounts";
+import sleep from 'sleep';
+class TranserResult{
 
+	constructor(txhash,kps,result){
+		this.txhash=txhash
+		this.kps=kps;
+		this.result = result;
+	}
+	done(cc){
+		cc = cc||0;
+		var self = this;
+		if(self.txhash&&cc<10)//调用10次
+		{
+			return  Buffle.cwv.rpc.getTransaction(self.txhash).then(function(body){
+				// console.log("get tx deploy result =="+body);
+				var jsbody = JSON.parse(body);
+				if(jsbody.transaction&&jsbody.transaction.status){
+					if(self.kps){
+						self.kps.increNonce();
+						accounts.saveKeyStore(self.kps);
+					}
+					return new Promise((resolve, reject) => {
+						resolve(jsbody.transaction.status);
+					});;
+				}else{
+					sleep.sleep(1);
+					return self.done(cc+1);
+				}
+			});
+		}else
+		if(!this.txhash)
+		{
+			return new Promise((resolve, reject) => {
+				reject("txhash not found");
+			});
+		}else{
+			return new Promise((resolve, reject) => {
+				reject("call timeout::"+cc+",txhash="+self.txhash);
+			});
+		}
+
+	}
+}
 module.exports.transfer =function (to,value,opts){
 		opts = opts||{};
 		var from = opts.from;
@@ -26,17 +68,59 @@ module.exports.transfer =function (to,value,opts){
 		// console.log("from=="+opts.from+",kp="+kps.hexAddress);
 		// console.log("opts=="+JSON.stringify(opts));
 		value = new BN(value).mul(new BN("10").pow(new BN("18")))
-		console.log("new value="+value);
-		return  Buffle.cwv.rpc.transfer(to,value,opts);
+		// console.log("new value="+value);
+		return  Buffle.cwv.rpc.transfer(to,value,opts).then(function(ret){
+			var jsbody = JSON.parse(ret);
+			if(jsbody.txHash){
+				return new Promise((resolve, reject) => {
+					resolve(new TranserResult(jsbody.txHash,kps));
+				}); 
+			}else{
+				return new Promise((resolve, reject) => {
+					reject("txhash not found");
+				}); 
+			}
+		});
 	}
 
-	module.exports.getBalance =function  (addr,opts){
-		// console.log("cwv mockup getBalance");
-		return Buffle.cwv.rpc.getBalance(addr,opts);
+module.exports.getBalance =function  (addr,opts){
+	// console.log("cwv mockup getBalance");
+	return Buffle.cwv.rpc.getBalance(addr,opts);
+}
+var __waitTxDone = function(txhash,cc){
+	//check
+	cc = cc||0;
+	if(txhash&&cc<10)//调用10次
+	{
+		return  Buffle.cwv.rpc.getTransaction(txhash).then(function(body){
+			// console.log("get tx deploy result =="+body);
+			var jsbody = JSON.parse(body);
+			if(jsbody.transaction&&jsbody.transaction.status){
+				return new Promise((resolve, reject) => {
+					resolve(jsbody.transaction.status);
+				});;
+			}else{
+				sleep.sleep(1);
+				return __waitTxDone(txhash,cc+1);
+			}
+		});
+	}else
+	if(!this.txhash)
+	{
+		return new Promise((resolve, reject) => {
+			reject("txhash not found");
+		});
+	}else{
+		return new Promise((resolve, reject) => {
+			reject("call timeout");
+		});
 	}
+	
 
+}
+module.exports.waitTxDone = __waitTxDone;
 
-	module.exports.checkAndSetNonce =function  (addr,opts){
+module.exports.checkAndSetNonce =function  (addr,opts){
 	opts = opts||{};
 	var from = opts.from;
 	if(!from){

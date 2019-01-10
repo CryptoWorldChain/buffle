@@ -475,7 +475,7 @@ class Contract {
 				}
 				// console.log("abidesc.constant=="+abidesc.constant+",length="+codelines.length)
 				if(abidesc.constant){
-					var idfound = 0;
+					var idfound = -1;
 					
 					for(var li =0;li<codelines.length-1;li+=2){
 						var trydef=codelines[li].split(" ");
@@ -492,8 +492,10 @@ class Contract {
 							}
 						}
 					}
-
-					constFileds.push({name:abidesc.name,idx:idfound});
+					if(idfound>=0){
+						constFileds.push({name:abidesc.name,idx:idfound});
+					}
+						
 
 				}
 			}			
@@ -509,7 +511,7 @@ class Contract {
 	}
 
 	doDeploy(opts){
-		console.log("contract = "+this.args.evm.deployedBytecode.object)
+		// console.log("contract = "+this.args.evm.deployedBytecode.object)
 		opts = opts||{};
 		var from = opts.from;
 		if(!from){

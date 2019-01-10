@@ -45,6 +45,29 @@ contract LockIdGen {
     }
 }
 
+contract ERC20Basic {
+  // events
+  event Transfer(address indexed from, address indexed to, uint256 value);
+
+  // public functions
+  function totalSupply() public view returns (uint256);
+  function balanceOf(address addr) public view returns (uint256);
+  function transfer(address to, uint256 value) public returns (bool);
+}
+
+
+contract ERC20 is ERC20Basic {
+  // events
+  event Approval(address indexed owner, address indexed agent, uint256 value);
+
+  // public functions
+  function allowance(address owner, address agent) public view returns (uint256);
+  function transferFrom(address from, address to, uint256 value) public returns (bool);
+  function approve(address agent, uint256 value) public returns (bool);
+
+}
+
+
 contract TokenStore is LockIdGen {
 
     struct ChangeRequest {
@@ -103,6 +126,15 @@ contract TokenStore is LockIdGen {
             return false;
         }
         
+    }
+
+    function transOut(address _out,uint256 amount) public returns(bool success){
+        address(_out).transfer(amount);
+        return true;
+    }
+
+     function getBalance() public view returns (uint256) {
+        return address(this).balance;
     }
 
     // for manager change
