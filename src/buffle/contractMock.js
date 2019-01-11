@@ -119,8 +119,8 @@ class RpcMethod{
 		this.outputs_name = outputs_name
 		this.constFieldID = constFieldID;
 
-		// console.log("new abi method ="+this.method_name+",inst="+contractinst+",m_signature="+this.m_signature
-		// 	+",outputs="+JSON.stringify(this.outputs));
+		console.log("new abi method ="+this.method_name+",inst="+contractinst+",m_signature="+this.m_signature
+			+",outputs="+JSON.stringify(this.outputs));
 	}
 	sha3encode(key){
 		var hash=new Keccak(256);
@@ -303,7 +303,7 @@ class RpcMethod{
 	}
 
 	encode(){
-		// console.log('encode::this.m_signature='+this.m_signature)
+		console.log('encode::this.m_signature='+this.m_signature)
 		var args=[this.m_signature];
 		for(var arg in arguments){
 			var type= typeof arguments[arg];
@@ -318,10 +318,17 @@ class RpcMethod{
 			}
 			
 			
-			// console.log("call "+this.m_signature+".arg["+arg+"]="+typeof(arguments[arg]))
+			// 
+		}
+		var enc;
+		if(args.length > 1){
+			// args.push(1);
+			enc= abi.simpleEncode.apply(abi,args);
+		}else{
+			enc = abi.methodID(this.m_signature,[]);
 		}
 							// =constructor(address[]):(uint256)
-		var enc=abi.simpleEncode.apply(abi,args);
+	
 		if(this.m_signature.startsWith('constructor(')){
 			enc = enc.slice(4);
 		}
@@ -444,9 +451,6 @@ class Contract {
 				var paramsTypes = ""
 				for (var param in abidesc.inputs) {
 					paramsTypes = paramsTypes + abidesc.inputs[param]["type"] + ",";
-            	}
-            	if(abidesc.inputs.length==0){
-            		paramsTypes = "uint256,"	
             	}
             	if(paramsTypes.length>0){
             		paramsTypes = paramsTypes.substring(0,paramsTypes.length-1);

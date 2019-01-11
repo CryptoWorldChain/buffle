@@ -87,6 +87,8 @@ contract TokenStore is LockIdGen {
     mapping (address => mapping(address=>mapping(address=>uint256))) public testmapp3;
 
 
+    ERC20 public token1;
+
 
     // CONSTRUCTOR
     constructor(
@@ -105,7 +107,7 @@ contract TokenStore is LockIdGen {
           testmapp3[pto][pto][pto] = 3333;
 
         }
-        
+        token1 = ERC20(0x0000000000000000000000000000000000000C20);
     }
 
     function addManager(address _addr) public returns(bool success){         
@@ -128,6 +130,25 @@ contract TokenStore is LockIdGen {
         
     }
 
+    function getTokenTotalSupply() public view returns(uint256 totals){
+        return token1.totalSupply();
+    }
+    
+    function tokenTransfer(address to,uint256 value) public payable returns (bool success){
+        token1.transferFrom(msg.sender,to,value);
+        return true;
+    }
+
+    function tokenContractTransfer(address to,uint256 value) public payable returns (bool success){
+        token1.transfer(to,value);
+        return true;
+    }
+
+
+    function getTokenBalance(address addr) public view returns(uint256 totals){
+        return token1.balanceOf(addr);
+    }
+    
     function transOut(address _out,uint256 amount) public returns(bool success){
         address(_out).transfer(amount);
         return true;
