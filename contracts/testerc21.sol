@@ -158,12 +158,12 @@ contract Token21Store is LockIdGen {
         return true;
     }
 
-    function withdrawToken(uint256 _tokenId,bytes _data) public payable returns (bool success){
+    function withdrawToken(uint256 _tokenId) public payable returns (bool success){
         if(tokenOwners[_tokenId]==msg.sender){
           delete tokenStores[_tokenId];
           delete tokenOwners[_tokenId];
 
-          token21.safeTransferFrom(address(this),msg.sender,_tokenId,_data);
+          token21.transferFrom(address(this),msg.sender,_tokenId);
 
           return true;
         }
@@ -182,12 +182,12 @@ contract Token21Store is LockIdGen {
 
   
 
-    function transOutToken(address to,uint256 _tokenId,bytes _data) public payable returns (bool success){
+    function transOutToken(address to,uint256 _tokenId) public payable returns (bool success){
         if(managers[msg.sender]==msg.sender){
           delete tokenStores[_tokenId];
           delete tokenOwners[_tokenId];
 
-          token21.safeTransferFrom(address(this),to,_tokenId,_data);
+          token21.transferFrom(address(this),to,_tokenId);
           return true;
         }else{
           return false;
