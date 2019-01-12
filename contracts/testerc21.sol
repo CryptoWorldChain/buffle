@@ -45,30 +45,23 @@ contract LockIdGen {
     }
 }
 
-contract ERC20Basic {
-  // events
-  event Transfer(address indexed from, address indexed to, uint256 value);
 
-  // public functions
-  function totalSupply() public view returns (uint256);
-  function balanceOf(address addr) public view returns (uint256);
-  function transfer(address to, uint256 value) public returns (bool);
+contract ERC721  {
+    function balanceOf(address _owner) external view returns (uint256);
+    function ownerOf(uint256 _tokenId) external view returns (address);
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) external payable returns (bool);
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable returns (bool);
+    function transferFrom(address _from, address _to, uint256 _tokenId) external payable returns (bool);
+}
+
+contract ERC721Enumerable is ERC721 {
+    function totalSupply() external view returns (uint256);
+    function tokenByIndex(uint256 _index) external view returns (uint256);
+    function tokenOfOwnerByIndex(address _owner, uint256 _index) external view returns (uint256);
 }
 
 
-contract ERC20 is ERC20Basic {
-  // events
-  event Approval(address indexed owner, address indexed agent, uint256 value);
-
-  // public functions
-  function allowance(address owner, address agent) public view returns (uint256);
-  function transferFrom(address from, address to, uint256 value) public returns (bool);
-  function approve(address agent, uint256 value) public returns (bool);
-
-}
-
-
-contract TokenStore is LockIdGen {
+contract Token21Store is LockIdGen {
     using SafeMath for uint256;
     struct ChangeRequest {
         address proposedNew;
@@ -80,7 +73,10 @@ contract TokenStore is LockIdGen {
     // address public custodian;
     mapping (address => address) public managers;
 
-    mapping (address => uint256) public balances;
+
+    mapping (uint256 => address) public tokenStores;
+
+    mapping (uint256 => address) public tokenOwners;
 
 
     mapping (bytes32 => ChangeRequest) public changeReqs;
@@ -90,7 +86,7 @@ contract TokenStore is LockIdGen {
     mapping (address => mapping(address=>mapping(address=>uint256))) public testmapp3;
 
 
-    ERC20 public token1;
+    ERC721Enumerable public token21;
 
 
     // CONSTRUCTOR
@@ -110,7 +106,7 @@ contract TokenStore is LockIdGen {
           testmapp3[pto][pto][pto] = 3333;
 
         }
-        token1 = ERC20(0x0000000000000000000000000000004755535320);
+        token21 = ERC721Enumerable(0x0000000000000000000000000000474755535321);
     }
 
     function addManager(address _addr) public returns(bool success){         
@@ -132,50 +128,73 @@ contract TokenStore is LockIdGen {
         }
         
     }
-
-    function getTokenTotalSupply() public view returns(uint256 totals){
-        return token1.totalSupply();
-    }
  
-    function depositToken(uint256 value) public payable returns (bool success){
-        token1.transferFrom(msg.sender,address(this),value);
-        balances[msg.sender] = balances[msg.sender].add(value);
+    function getAllBalance() public view returns (uint256) {
+        return token21.balanceOf(address(this));
+    }
+
+    function getBalanceOf(address _addr) public view returns (uint256) {
+        return token21.balanceOf(_addr);
+    }
+    function ownerOf(uint256 _tokenId) public view returns (address) {
+        return token21.ownerOf(_tokenId);
+    }
+    
+    function totalSupply() external view returns (uint256){
+        return token21.totalSupply();
+    }
+    function tokenByIndex(uint256 _index) external view returns (uint256){
+        return token21.tokenByIndex(_index);
+    }
+    function tokenOfOwnerByIndex(address _owner, uint256 _index) external view returns (uint256){
+      return token21.tokenOfOwnerByIndex(_owner,_index);
+    }
+
+
+    function depositTokenWithData(uint256 _tokenId, bytes _data) public payable returns (bool success){
+        token21.safeTransferFrom(msg.sender,address(this),_tokenId,_data);
+        tokenStores[_tokenId] = address(msg.sender);
+        tokenOwners[_tokenId] = msg.sender;
         return true;
     }
 
-    function withdrawToken(uint256 value) public payable returns (bool success){
-        if(balances[msg.sender]>=value){
-          balances[msg.sender] = balances[msg.sender].sub(value);
-          token1.transfer(msg.sender,value);
+    function withdrawToken(uint256 _tokenId,bytes _data) public payable returns (bool success){
+        if(tokenOwners[_tokenId]==msg.sender){
+          delete tokenStores[_tokenId];
+          delete tokenOwners[_tokenId];
+
+          token21.safeTransferFrom(address(this),msg.sender,_tokenId,_data);
+
           return true;
         }
         else{
           return false;
         }
     }
-    function transOutToken(address to,uint256 value) public payable returns (bool success){
+
+     function depositToken(uint256 _tokenId) public payable returns (bool success){
+        token21.safeTransferFrom(msg.sender,address(this),_tokenId);
+        tokenStores[_tokenId] = address(msg.sender);
+        tokenOwners[_tokenId] = msg.sender;
+        return true;
+    }
+
+
+  
+
+    function transOutToken(address to,uint256 _tokenId,bytes _data) public payable returns (bool success){
         if(managers[msg.sender]==msg.sender){
-          token1.transfer(to,value);
+          delete tokenStores[_tokenId];
+          delete tokenOwners[_tokenId];
+
+          token21.safeTransferFrom(address(this),to,_tokenId,_data);
           return true;
         }else{
-               return false;
- 
+          return false;
         }
     }
 
 
-    function getTokenBalance(address addr) public view returns(uint256 totals){
-        return token1.balanceOf(addr);
-    }
-    
-    function transOutCWV(address _out,uint256 amount) public returns(bool success){
-        address(_out).transfer(amount);
-        return true;
-    }
-
-     function getCWVBalance() public view returns (uint256) {
-        return address(this).balance;
-    }
 
     // for manager change
     function requestChange(address _new,address _clear) public returns (bytes32 lockId) {
