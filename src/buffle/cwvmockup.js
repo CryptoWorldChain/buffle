@@ -149,3 +149,53 @@ module.exports.checkAndSetNonce =function  (addr,opts){
 	});
 }
 
+function getKeyPairs(opts){
+	opts = opts||{};
+	var from = opts.from;
+	if(!from){
+		if(config.accounts.default&&config.accounts.default.length>20){
+			opts.from = config.accounts.default;
+		}else{
+			opts.from = Buffle.accounts[0];
+		}
+		from  = opts.from;
+	}
+	var kps = Buffle.keypairs[from];
+	if(!kps){
+		return new Promise((resolve, reject) => {
+			reject("keypair not found for address="+from);
+		});;
+	}
+	opts.keypair = kps;
+	return opts;
+}
+module.exports.createCRC20 =function  (args,opts){
+	console.log("cwv mockup createCRC20");
+	return Buffle.cwv.rpc.createCRC20({
+		token:args.token,amount:args.amount
+	},getKeyPairs(opts));
+}
+module.exports.callCRC20 =function  (args,opts){
+	console.log("cwv mockup callCRC20");
+	return Buffle.cwv.rpc.callCRC20({
+		token:args.token,amount:args.amount,to:args.to
+	},getKeyPairs(opts));
+}
+
+module.exports.createCRC721 =function  (args,opts){
+	console.log("cwv mockup createCRC721");
+	return Buffle.cwv.rpc.createCRC721({
+		symbol:args.symbol,
+		exdata:args.exdata,
+		names:args.names
+	},getKeyPairs(opts));
+}
+module.exports.callCRC721 =function  (args,opts){
+	console.log("cwv mockup callCRC721");
+	return Buffle.cwv.rpc.callCRC721({
+		cryptotoken:args.cryptotoken,
+		symbol:args.symbol,
+		amount:0,
+		to:args.to
+	},getKeyPairs(opts));
+}
