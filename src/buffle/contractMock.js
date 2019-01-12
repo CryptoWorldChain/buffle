@@ -51,20 +51,24 @@ class RpcResult {
 	}
 
 	toHexString(){
-		if(this.rpcMethod.outputs.length==1){
-			if(this.rpcMethod.outputs[0]=='bytes32')
-			{
-				// console.log("setv")
-				return new Buffer(this.resultObj[0]).toString('hex');
-			}else if(this.resultObj[0].constructor.name=='Array'){
-				return this.resultObj[0].toString('hex');
+		try{
+			if(this.rpcMethod.outputs.length==1){
+				if(this.rpcMethod.outputs[0]=='bytes32')
+				{
+					// console.log("setv")
+					return new Buffer(this.resultObj[0]).toString('hex');
+				}else if(this.resultObj[0].constructor.name=='Array'){
+					return this.resultObj[0].toString('hex');
+				}
 			}
-		}
-		if(this.resultObj){
+			if(this.resultObj){
 
+				return this.resultObj;
+			}else{
+				return NaN;
+			}
+		}catch(error){
 			return this.resultObj;
-		}else{
-			return NaN;
 		}
 	}
 
@@ -97,7 +101,8 @@ class RpcResult {
 						});
 					}else{
 						return new Promise((resolve, reject) => {
-							reject("tx invoke error:"+self.txHash+",status="+jsbody.transaction.status+",result="+ jsbody.transaction.result);
+							self.resultObj = "tx invoke error:"+self.txHash+",status="+jsbody.transaction.status+",result="+ jsbody.transaction.result
+							resolve(self);
 						});
 					}					
 				}else{
@@ -119,8 +124,8 @@ class RpcMethod{
 		this.outputs_name = outputs_name
 		this.constFieldID = constFieldID;
 
-		console.log("new abi method ="+this.method_name+",inst="+contractinst+",m_signature="+this.m_signature
-			+",outputs="+JSON.stringify(this.outputs));
+		// console.log("new abi method ="+this.method_name+",inst="+contractinst+",m_signature="+this.m_signature
+		// 	+",outputs="+JSON.stringify(this.outputs));
 	}
 	sha3encode(key){
 		var hash=new Keccak(256);
@@ -303,7 +308,7 @@ class RpcMethod{
 	}
 
 	encode(){
-		console.log('encode::this.m_signature='+this.m_signature)
+		// console.log('encode::this.m_signature='+this.m_signature)
 		var args=[this.m_signature];
 		for(var arg in arguments){
 			var type= typeof arguments[arg];

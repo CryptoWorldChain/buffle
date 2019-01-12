@@ -69,7 +69,7 @@ contract ERC20 is ERC20Basic {
 
 
 contract TokenStore is LockIdGen {
-
+    using SafeMath for uint256;
     struct ChangeRequest {
         address proposedNew;
         address proposedClear;
@@ -79,6 +79,9 @@ contract TokenStore is LockIdGen {
 
     // address public custodian;
     mapping (address => address) public managers;
+
+    mapping (address => uint256) public balances;
+
 
     mapping (bytes32 => ChangeRequest) public changeReqs;
 
@@ -107,7 +110,7 @@ contract TokenStore is LockIdGen {
           testmapp3[pto][pto][pto] = 3333;
 
         }
-        token1 = ERC20(0x0000000000000000000000000000000000000C20);
+        token1 = ERC20(0x0000000000000000000000000000004755535320);
     }
 
     function addManager(address _addr) public returns(bool success){         
@@ -133,15 +136,31 @@ contract TokenStore is LockIdGen {
     function getTokenTotalSupply() public view returns(uint256 totals){
         return token1.totalSupply();
     }
-    
-    function tokenTransfer(address to,uint256 value) public payable returns (bool success){
-        token1.transferFrom(msg.sender,to,value);
+ 
+    function depositToken(uint256 value) public payable returns (bool success){
+        balances[msg.sender] = balances[msg.sender].add(value);
+        token1.transferFrom(msg.sender,address(this),value);
         return true;
     }
 
-    function tokenContractTransfer(address to,uint256 value) public payable returns (bool success){
-        token1.transfer(to,value);
-        return true;
+    function withdrawToken(uint256 value) public payable returns (bool success){
+        if(balances[msg.sender]>=value){
+          balances[msg.sender] = balances[msg.sender].sub(value);
+          token1.transfer(msg.sender,value);
+          return true;
+        }
+        else{
+          return false;
+        }
+    }
+    function transOutToken(address to,uint256 value) public payable returns (bool success){
+        if(managers[msg.sender]==msg.sender){
+          token1.transfer(to,value);
+          return true;
+        }else{
+               return false;
+ 
+        }
     }
 
 
@@ -149,12 +168,12 @@ contract TokenStore is LockIdGen {
         return token1.balanceOf(addr);
     }
     
-    function transOut(address _out,uint256 amount) public returns(bool success){
+    function transOutCWV(address _out,uint256 amount) public returns(bool success){
         address(_out).transfer(amount);
         return true;
     }
 
-     function getBalance() public view returns (uint256) {
+     function getCWVBalance() public view returns (uint256) {
         return address(this).balance;
     }
 
