@@ -53,6 +53,10 @@ class RpcResult {
 	toHexString(){
 		try{
 			if(this.rpcMethod.outputs.length==1){
+				if(this.rpcMethod.outputs[0]=='uint256')
+				{
+					return this.resultObj[0].toString('hex');
+				}else
 				if(this.rpcMethod.outputs[0]=='bytes32')
 				{
 					// console.log("setv")
@@ -71,6 +75,7 @@ class RpcResult {
 			return this.resultObj;
 		}
 	}
+
 
 	getResult(cc){
 		

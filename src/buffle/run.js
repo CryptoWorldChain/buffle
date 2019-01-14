@@ -25,18 +25,18 @@ var _buildAndRun = function(){
 		// var args=["mancount():(uint256)"];
 		// var decoded = abi.rawDecode(["uint256"], 
 		// 	Buffer.from("0000000000000000000000000000000000000000000000000000000000000001",'hex'))
-		// console.log("decoded=="+decoded)
-		// var decoded = abi.rawDecode(["bytes32"], 
-		// 	Buffer.from("06761d9658b32d8e19bc9ba223cfb66f6f1368e142c526e1ee0e5f428fc593c7",'hex'))
-		// console.log("decode.len="+decoded.length);
+		// console.log("decoded=="+decoded) 
+		// var decoded = abi.rawDecode(["uint256"], 
+			// Buffer.from("6222021fddf16184ed77c27acd7a9ca8d0922f8f84506d95a4d4ee6c964b6360",'hex'))
+		// console.log("decode.len="+decoded.length+",i="+decoded[0].toString('hex'));
 		// console.log("decoded=="+ new Buffer(decoded[0]).toString('hex'))
-		var key = "00000000000000000000000069ee6d7cc0be11ceb79ed7679144543e62a095440000000000000000000000000000000000000000000000000000000000000001";
-		console.log("requestkey=="+key);
-		var hash=new Keccak(256);
-		hash.update(Buffer.from(key,'hex'));
+		// var key = "00000000000000000000000069ee6d7cc0be11ceb79ed7679144543e62a095440000000000000000000000000000000000000000000000000000000000000001";
+		// console.log("requestkey=="+key);
+		// var hash=new Keccak(256);
+		// hash.update(Buffer.from(key,'hex'));
 
-		var keyhex=new Buffer(hash.digest()).toString('hex');
-		console.log("keyhex="+keyhex);
+		// var keyhex=new Buffer(hash.digest()).toString('hex');
+		// console.log("keyhex="+keyhex);
 
 
 
