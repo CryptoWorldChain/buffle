@@ -184,18 +184,9 @@ module.exports.callCRC20 =function  (args,opts){
 
 module.exports.createCRC721 =function  (args,opts){
 	console.log("cwv mockup createCRC721");
-	return Buffle.cwv.rpc.createCRC721({
-		symbol:args.symbol,
-		exdata:args.exdata,
-		names:args.names
-	},getKeyPairs(opts));
+	return Buffle.cwv.rpc.createCRC721(args,getKeyPairs(opts));
 }
 module.exports.callCRC721 =function  (args,opts){
 	console.log("cwv mockup callCRC721");
-	return Buffle.cwv.rpc.callCRC721({
-		cryptotoken:args.cryptotoken,
-		symbol:args.symbol,
-		amount:0,
-		to:args.to
-	},getKeyPairs(opts));
+	return Buffle.cwv.rpc.callCRC721(args,getKeyPairs(opts));
 }
