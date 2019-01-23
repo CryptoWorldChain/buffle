@@ -1,7 +1,7 @@
 {
   "network": {
     "rpcremote": "http://ta30.icwv.co:38000/fbs",
-    "rpc": "http://localhost:8000/fbs"
+    "rpc": "http://ta30.icwv.co:38000/fbs"
   },
   "accounts": {
     "num":10,

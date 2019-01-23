@@ -19,10 +19,9 @@ const dom = new JSDOM({
   url: "http://localhost/"
 });
 
- // javascript
 var originit=it;
-
-var	httpPostStub = sinon.stub(rp,'post'); // stub http so we can change the response
+// stub http so we can change the response
+var	httpPostStub = sinon.stub(rp,'post'); 
 
 it("@Init Buffle",function(done){
 	Buffle.cwv.config.rpc_provider = rp;
@@ -44,13 +43,11 @@ it('@Load Contract Test', function(){
 		}
 
 		var contract = function(title,fn){
-			// console.log("calling contract:"+title+",cwv="+cwv);
 			fn(preloadaccts,cwv);
 		}
 	 
 		global.it = bit
 		global.cwv=cwvmockup;
-		// console.log("cwvmockup="+JSON.stringify(cwvmockup));
 		global.artifacts = contractbuild;
 		global.deployer = deployer;
 		global.contract = contract;
@@ -60,7 +57,6 @@ it('@Load Contract Test', function(){
 		}).forEach( function(file) {
 			var contractfile = require(path.join(testDir,file));
 		});
-
 	})
 })
 

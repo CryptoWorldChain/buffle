@@ -1,5 +1,3 @@
-
-
 import Buffle from './global';
 import config from 'config';
 import BN  from "bn.js";
@@ -48,43 +46,39 @@ class TranserResult{
 	}
 }
 module.exports.transfer =function (to,value,opts){
-		opts = opts||{};
-		var from = opts.from;
-		if(!from){
-			if(config.accounts.default&&config.accounts.default.length>20){
-				opts.from = config.accounts.default;
-			}else{
-				opts.from = Buffle.accounts[0];
-			}
-			from  = opts.from;
+	opts = opts||{};
+	var from = opts.from;
+	if(!from){
+		if(config.accounts.default&&config.accounts.default.length>20){
+			opts.from = config.accounts.default;
+		}else{
+			opts.from = Buffle.accounts[0];
 		}
-		var kps = Buffle.keypairs[from];
-		if(!kps){
-			return new Promise((resolve, reject) => {
-				reject("keypair not found for address="+from);
-			});;
-		}
-		opts.keypair = kps;
-		// console.log("from=="+opts.from+",kp="+kps.hexAddress);
-		// console.log("opts=="+JSON.stringify(opts));
-		value = new BN(value).mul(new BN("10").pow(new BN("18")))
-		// console.log("new value="+value);
-		return  Buffle.cwv.rpc.transfer(to,value,opts).then(function(ret){
-			var jsbody = JSON.parse(ret);
-			if(jsbody.txHash){
-				return new Promise((resolve, reject) => {
-					resolve(new TranserResult(jsbody.txHash,kps));
-				}); 
-			}else{
-				return new Promise((resolve, reject) => {
-					reject("txhash not found");
-				}); 
-			}
-		});
+		from  = opts.from;
 	}
+	var kps = Buffle.keypairs[from];
+	if(!kps){
+		return new Promise((resolve, reject) => {
+			reject("keypair not found for address="+from);
+		});;
+	}
+	opts.keypair = kps;
+	value = new BN(value).mul(new BN("10").pow(new BN("18")))
+	return  Buffle.cwv.rpc.transfer(to,value,opts).then(function(ret){
+		var jsbody = JSON.parse(ret);
+		if(jsbody.txHash){
+			return new Promise((resolve, reject) => {
+				resolve(new TranserResult(jsbody.txHash,kps));
+			}); 
+		}else{
+			return new Promise((resolve, reject) => {
+				reject("txhash not found");
+			}); 
+		}
+	});
+}
 
 module.exports.getBalance =function  (addr,opts){
-	// console.log("cwv mockup getBalance");
 	return Buffle.cwv.rpc.getBalance(addr,opts);
 }
 var __waitTxDone = function(txhash,cc){

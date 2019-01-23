@@ -94,26 +94,25 @@ class RpcResult {
 		}
 		
 		return  Buffle.cwv.rpc.getTransaction(this.txHash).then(function(body){
-				// console.log("get tx  result =="+body);
-				var jsbody = JSON.parse(body);
-				if(jsbody.transaction&&jsbody.transaction.status){
-					var result = jsbody.transaction.result;
-					if(result&&jsbody.transaction.status=='D'){
-						// console.log("rpcoutputlen="+self.rpcMethod.outputs.length+",="+self.rpcMethod.outputs)
-						self.resultObj = abi.rawDecode(self.rpcMethod.outputs, Buffer.from(result,'hex'))
-						return new Promise((resolve, reject) => {
-							resolve(self);
-						});
-					}else{
-						return new Promise((resolve, reject) => {
-							self.resultObj = "tx invoke error:"+self.txHash+",status="+jsbody.transaction.status+",result="+ jsbody.transaction.result
-							resolve(self);
-						});
-					}					
+			var jsbody = JSON.parse(body);
+			if(jsbody.transaction&&jsbody.transaction.status){
+				var result = jsbody.transaction.result;
+				if(result&&jsbody.transaction.status=='D'){
+					// console.log("rpcoutputlen="+self.rpcMethod.outputs.length+",="+self.rpcMethod.outputs)
+					self.resultObj = abi.rawDecode(self.rpcMethod.outputs, Buffer.from(result,'hex'))
+					return new Promise((resolve, reject) => {
+						resolve(self);
+					});
 				}else{
-					sleep.sleep(2);
-					return self.getResult(cc+1);
-				}
+					return new Promise((resolve, reject) => {
+						self.resultObj = "tx invoke error:"+self.txHash+",status="+jsbody.transaction.status+",result="+ jsbody.transaction.result
+						resolve(self);
+					});
+				}					
+			}else{
+				sleep.sleep(2);
+				return self.getResult(cc+1);
+			}
 
 		});
 	}
@@ -575,8 +574,6 @@ class Contract {
 			})
 
 	}
-
-
 }
 
 export default{
