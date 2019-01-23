@@ -8,21 +8,21 @@ buffle Provide contract compilation, crc20 create call, crc721 create call, etc.
 
 By default, 10 users will be created
 
-### 安装
+### Install
 ```js
-npm install @cwv/buffle -g
+$ npm install @cwv/buffle -g
 ```
 
-### 代码结构说明
+### Code structure description
 <pre>                      
 ├── accounts                       
 │   └── init.js                       
 ├── config
-│   └── default.json                       //配置文件
-├── contracts                              //合约目录
-│   └── testerc21.sol                      //测试合约
+│   └── default.json                       //Configuration file
+├── contracts                              //Contract directory
+│   └── testerc21.sol                      //Test contract
 ├── gulpfile.js
-├── keystore                               //keystore目录,默认创建10个用户
+├── keystore                               //keystore Directory, create 10 users by default
 │   ├── keystore-0.json
 │   ├── keystore-1.json
 │   ├── keystore-2.json
@@ -36,27 +36,27 @@ npm install @cwv/buffle -g
 ├── package-lock.json
 ├── package.json
 ├── src
-│   └── buffle                       //水牛源码目录
-│       ├── accounts.js              //address、keystore操作
-│       ├── contractMock.js          //合约模拟数据
-│       ├── contractbuild.js         //合约编译
-│       ├── cwvmockup.js             //调用cwv.js sdk
-│       ├── cwvtxtype.js             //交易类型
+│   └── buffle                       //buffle Source directory
+│       ├── accounts.js              //Address, keystore operation
+│       ├── contractMock.js          //Contract simulation data
+│       ├── contractbuild.js         //Contract compilation
+│       ├── cwvmockup.js             //call cwv.js sdk
+│       ├── cwvtxtype.js             //Transaction Type
 │       ├── deployer.js
-│       ├── global.js                //全局cwv.js调用设置
-│       ├── index.js                 //入口程序
-│       ├── mocha_preload.js         //mocha测试文件
-│       ├── run.js                   //运行代码
-│       └── utils.js                 //工具类
-├── test                             //测试示例
+│       ├── global.js                //Global cwv.js call settings
+│       ├── index.js                 //Entry procedure
+│       ├── mocha_preload.js         //mocha test file
+│       ├── run.js                   //Running code
+│       └── utils.js                 //tools
+├── test                             //Test example
 │   ├── test.djs
-│   ├── testcontract.mjs             //合约调用
-│   ├── testcontracttransfer.djs     //合约调用
-│   ├── testcrc20.djs                //创建crc20,调用crc20
-│   ├── testcrc721.djs               //创建crc721,调用crc721
-│   ├── testcwvrand.djs              //随机合约调用
-│   ├── testerc20tokens.djs          //crc20合约操作
-│   └── testerc21tokens.js           //crc721合约操作
+│   ├── testcontract.mjs             //Contract call
+│   ├── testcontracttransfer.djs     //Contract call
+│   ├── testcrc20.djs                //create crc20,call crc20
+│   ├── testcrc721.djs               //create crc721,call crc721
+│   ├── testcwvrand.djs              //Random contract call
+│   ├── testerc20tokens.djs          //crc20 operation
+│   └── testerc21tokens.js           //crc721 operation
 └── webpack.buffle.config.js
 </pre>
 
