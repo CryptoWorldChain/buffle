@@ -87,7 +87,7 @@ class RpcResult {
 				});
 		};
 		cc=cc||0;
-		if(cc>30){
+		if(cc>2){
 			return new Promise((resolve, reject) => {
 				reject("timeout for get result:txhash="+this.txHash);
 			});				
@@ -95,6 +95,7 @@ class RpcResult {
 		
 		return  Buffle.cwv.rpc.getTransaction(this.txHash).then(function(body){
 			var jsbody = JSON.parse(body);
+			console.log("jsbody="+JSON.stringify(jsbody))
 			if(jsbody.transaction&&jsbody.transaction.status){
 				var result = jsbody.transaction.result;
 				if(result&&jsbody.transaction.status=='D'){
@@ -180,6 +181,7 @@ class RpcMethod{
 			}
 
 		}
+		var sync = opts.sync||false;
 		var from = opts.from;
 		if(!from){
 			if(config.accounts.default&&config.accounts.default.length>20){
@@ -243,8 +245,6 @@ class RpcMethod{
 				}
 				enc = enc.slice(4)
 			}		
-			//
-
 
 			var encHex =  new Buffer(enc).toString('hex');
 
@@ -253,18 +253,21 @@ class RpcMethod{
 			opts.data = encHex;
 			var self = this;
 
-			return  Buffle.cwv.rpc.sendTxTransaction(8,this.contractinst.address,value,opts).then(function(body){
+			opts.contract = this.contractinst.address;
+			console.log("opts="+JSON.stringify(opts))
+			return  Buffle.cwv.rpc.callContract(opts, null, opts).then(function(body){
 				// console.log("get tx deploy result =="+body);
 				var jsbody = JSON.parse(body);
-				if(jsbody.txHash){
-					return new Promise((resolve, reject) => {
-
-						kps.increNonce();
-						accounts.saveKeyStore(kps);
-
-						resolve(new RpcResult(self,jsbody.txHash));
-					});
-
+				if(jsbody.hash){
+					kps.increNonce();
+					accounts.saveKeyStore(kps);
+					if(!sync){
+						return new Promise((resolve, reject) => {
+							resolve(new RpcResult(self,jsbody.hash));
+						});						
+					}else{
+						return new RpcResult(self,jsbody.hash).getResult(0);
+					}
 				}else{
 					return new Promise((resolve, reject) => {
 						reject("send tx error:"+body);
@@ -276,7 +279,7 @@ class RpcMethod{
 			var self = this;
 			var p=[]
 			var getp=function(idx){
-				return Buffle.cwv.rpc.getStorageValue([self.contractinst.address,hex]).then(function(body){
+				return Buffle.cwv.rpc.getStorageValue(self.contractinst.address,hex).then(function(body){
 					// console.log("get storage by key=="+self.method_name+",body="+body);
 					var jsbody = JSON.parse(body);
 					if(jsbody.content){
@@ -341,6 +344,7 @@ class RpcMethod{
 		if(this.m_signature.startsWith('constructor(')){
 			enc = enc.slice(4);
 		}
+		
 		var encHex =  new Buffer(enc).toString('hex');
 
 		return encHex;
@@ -354,12 +358,12 @@ class ContractInstance{
 		// code
 		//copy methods
 		// console.log("new ContractInstance,methods.length="+contract.abiMethodName.length);
-		for(var i=0;i<contract.abiMethodName.length;i++)
-		{ 
+		for(var i=0;i<contract.abiMethodName.length;i++){ 
 			var method_name  = contract.abiMethodName[i];
 			var method_sig = contract.abiMethodSign[i];
 
 			var constFieldID = contract.constFields.indexOf(method_name);
+			console.log("constFieldID="+constFieldID+",contract.constFields:"+contract.constFields+",method_name:"+method_name)
 			// console.log("contract.constFields=="+JSON.stringify(contract.constFields)+",methodname="+method_name
 			// 	+",index="+constFieldID);
 			var rpcM = new RpcMethod(this,method_name,method_sig,contract.inputcounts[i],contract.outputs[i],
@@ -525,7 +529,14 @@ class Contract {
 
 	doDeploy(opts){
 		// console.log("contract = "+this.args.evm.deployedBytecode.object)
+
 		opts = opts||{};
+		var type = typeof opts;
+		if(type=='object'){
+		} else {
+			opts = {"from": opts}
+		}
+		
 		var from = opts.from;
 		if(!from){
 			if(config.accounts.default&&config.accounts.default.length>20){
@@ -542,36 +553,40 @@ class Contract {
 			});;
 		}
 		opts.keypair = kps;
+		// console.log("keypair=="+JSON.stringify(opts.keypair))
+		// opts.keypair.nonce = opts.nonce;
+		// console.log("kps.nonce="+kps.nonce);
 		var value = 0;
 		if(opts.value){
 			value = opts.value;	
 		}
 		opts.data = this.args.evm.bytecode.object;
-		// console.log("method_constructor=="+this.method_constructor.encode+",sig="+this.method_constructor.m_signature)
 
 		var args = Array.prototype.slice.call(arguments).slice(0,arguments.length-1)
 
+		// console.log("deploy args="+JSON.stringify(opts));
 		// console.log("args=="+args.length);
-		
-		var constructorenc = this.method_constructor.encode.apply(this.method_constructor,args);
-		// console.log("constructorenc="+constructorenc);
-		opts.data = opts.data.concat(constructorenc);
+		if (this.method_constructor != null) {
+			var constructorenc = this.method_constructor.encode.apply(this.method_constructor,opts);
+			opts.data = opts.data.concat(constructorenc);
+			// console.log("constructorenc=" + constructorenc + " args=" + args);
+		}
 		var self = this;
 		// console.log("ntxtype=="+txtype.TYPE_CreateContract);//txtype,toAddr,amount,opts
-		return  Buffle.cwv.rpc.sendTxTransaction(7,NaN,value,opts).then(function (body){
-				// console.log("contract.doDeploy.return body=="+body)
-				if(body){
-					var jsbody = JSON.parse(body);
-					if(jsbody.contractHash){
-						var inst = new ContractInstance(self,jsbody.contractHash,jsbody.txHash)
-						// console.log("create Contract OKOK:"+inst.constructor.name);
-						kps.increNonce();
-						accounts.saveKeyStore(kps);
-						return inst;
-					}
-				}			
-				return NaN;
-			})
+		return  Buffle.cwv.rpc.createContract(opts,null,opts).then(function (body){
+			console.log("contract.doDeploy.return body=="+body)
+			if(body){
+				var jsbody = JSON.parse(body);
+				if(jsbody.contractHash){
+					var inst = new ContractInstance(self,jsbody.contractHash,jsbody.hash)
+					// console.log("create Contract OKOK:"+inst.constructor.name);
+					kps.increNonce();
+					accounts.saveKeyStore(kps);
+					return inst;
+				}
+			}			
+			return NaN;
+		})
 
 	}
 }

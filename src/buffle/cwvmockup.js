@@ -127,19 +127,30 @@ module.exports.checkAndSetNonce =function  (addr,opts){
 	}
 
 	return Buffle.cwv.rpc.getBalance(addr,opts).then(function(body){
-		// console.log("checkAndSetNonce get::"+body);
+		// console.log("checkAndSetNonce addr::"+addr+" get::"+body);
 		var jsBody = JSON.parse(body);
-		var nonce = jsBody.account.nonce;
-		if(nonce){
+		if (jsBody.retCode == 1) {
 			var kps = Buffle.keypairs[addr];
-			if(kps&&nonce!=kps.nonce){
-				kps.setNonce(nonce);
-				accounts.saveKeyStore(kps);
+			if(jsBody.account&&jsBody.account.value&&jsBody.account.value.nonce){
+				var nonce = jsBody.account.value.nonce;
+				if(kps&&nonce!=kps.nonce){
+					kps.setNonce(nonce);
+					accounts.saveKeyStore(kps);
+				}
+			}else{
+				if(kps){
+					kps.setNonce(0);
+					accounts.saveKeyStore(kps);
+				}
 			}
-		}else{
-			console.log("nonce not found");
+			return new Promise((resolve, reject) => {
+				resolve(jsBody);
+			}); 
+		} else {
+			return new Promise((resolve, reject) => {
+				resolve(jsBody);
+			}); 
 		}
-		return body;
 	});
 }
 

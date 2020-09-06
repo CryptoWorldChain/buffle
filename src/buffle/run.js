@@ -1,4 +1,4 @@
-import  path from 'path';
+import path from 'path';
 import Buffle from "./global";
 import config from 'config'
 import accounts from "./accounts";

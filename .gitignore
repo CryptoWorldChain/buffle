@@ -2,3 +2,4 @@
 node_modules/
 dist/
 keystore/
+demo.js
